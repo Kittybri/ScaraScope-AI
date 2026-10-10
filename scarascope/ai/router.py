@@ -1,4 +1,6 @@
 """Simple deterministic routing and provider fallback, with privacy enforcement."""
+from time import perf_counter
+from ..observability.metrics import record
 from ..core.config import Settings
 from ..core.models import LLMResult, ResearchRequest
 from .providers.base import LLMProvider, ProviderError
@@ -41,10 +43,15 @@ class ModelRouter:
                 continue
             try:
                 provider = self.local if name == "local" else self.cloud
+                start=perf_counter()
                 text = await provider.generate(system, prompt)
+                record("llm_success",provider=name,milliseconds=(perf_counter()-start)*1000)
+                if name != first_choice: record("provider_fallback",provider=name)
                 return LLMResult(provider="ollama" if name == "local" else "groq", model=self.settings.ollama_model if name == "local" else self.settings.groq_model, text=text, fallback_used=name != first_choice, note="; ".join(attempts) or None)
             except ProviderError as exc:
+                record("llm_provider_failure",provider=name)
                 attempts.append(f"{name}: {exc}")
+        record("deterministic_fallback")
         reason = "; ".join(attempts) or "No usable LLM provider is configured."
         if request.privacy == "local_only":
             reason += " Cloud fallback was disabled by privacy policy."

@@ -2,7 +2,22 @@
 
 **A source-grounded financial research assistant and hybrid LLM engineering portfolio project.** Built independently (not connected with my personal projects Scaramouche and Wanderer), with a headless Python/FastAPI backend, browser dashboard, optional Discord client, and pluggable Ollama/Groq inference.
 
-> **Status:** v0.1 prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not a full-text filing RAG system.
+> **Status:** v0.2 modular prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not a full-text filing RAG system.
+
+
+## New in v0.2: modular financial research toolkit
+
+- **Research agent:** explicit bounded research plan and step trace, mathematical/source metadata verification, and optional best-effort 10-K Item 1A / 7 evidence snippets. No arbitrary model tool execution.
+- **Company comparison:** side-by-side latest annual SEC financial metrics, with warnings for fiscal-period mismatches.
+- **DCF scenario analysis:** user-supplied unlevered free cash flow, discount/terminal growth assumptions and a 5 × 5 sensitivity grid. **Not a stock price target.**
+- **PDF and XLSX reports:** generated on demand, including SEC source links, caveats, and spreadsheet formulas.
+- **Evaluation:** keyless, reproducible six-case arithmetic suite; separate unit/integration regression tests.
+- **Operational features:** per-process SEC pacing/caching, privacy-aware LLM statistics, Ollama reachability diagnostics, API throttling and optional strict-auth setting.
+- **Manual watchlist:** saved ticker metadata and on-demand latest filing change checks; no scheduled notifications yet.
+
+Read [Feature Inventory](docs/FEATURES.md), [Security Notes](docs/SECURITY.md), [Evaluation Guide](docs/EVALUATION.md) and [Architecture](docs/ARCHITECTURE.md).
+
+**Quickest demo:** Run the app, type `DEMO`, click **Run research agent**, then **Download PDF** or **Download Excel**. DCF, evaluation and watchlist controls are in the Research Toolkit below the original financial-analysis panel.
 
 ## What works today
 
@@ -20,8 +35,12 @@
 | Local SQLite research history | Metadata only; no prompt or report content stored |
 | Optional Discord `!scope` command | Implemented as API client |
 | Automated pytest suite, GitHub Actions, Docker | Included |
+| Bounded research agent and verification trace | Implemented (rule-driven, not autonomous tool generation) |
+| Company comparison and illustrative DCF | Implemented |
+| PDF/Excel downloads, watchlist, evaluation tools | Implemented |
+| Best-effort Item 1A / Item 7 filing sections | Implemented; dependent on source format |
 
-**Not yet implemented:** full-text document ingestion and risk-factor extraction, embeddings/RAG, XBRL calculation linkbase reconciliation, precision-grade financial validation across every accounting taxonomy, streaming responses, user accounts, multi-tenant isolation, quota accounting, SEC-wide rate limiting/caching, and production cloud deployment. Financial summaries should be reviewed against their sources.
+**Not yet implemented:** robust full-text document RAG/embeddings, paragraph-level citations, XBRL calculation linkbase reconciliation, precision-grade financial validation across every accounting taxonomy, streaming responses, user accounts, multi-tenant isolation, cross-worker rate limiting and production cloud deployment. Financial summaries should be reviewed against their sources.
 
 ## Quick start (no secrets required)
 
@@ -113,58 +132,32 @@ Commands: `!scope DEMO`, `!scope MSFT`, and `!scopehelp`. Run FastAPI separately
 
 ## Architecture and project structure
 
-The app is deliberately organized **by responsibility**, not as a large `bot.py` file.
-The financial engine is independent of the interface. Adding a Discord command, web page,
-or future mobile client does not require changing financial calculations or model providers.
+**Strictly modular:** financial math, network ingestion, AI, report generation, agent planning, persistence and interfaces live in separate packages. There is no giant bot file.
 
 ```text
 scarascope/
-  api/                      HTTP boundary: ASGI app, routes, auth dependencies
-    __init__.py             Public `scarascope.api:app` entry point
-    app.py                  FastAPI application / static frontend mount
-    routes.py               Health, demo, research and history endpoints
-    dependencies.py         Settings injection and API key protection
-  core/                     Cross-cutting types and configuration
-    config.py               Environment settings and credentials
-    models.py               Typed request, response, and financial contracts
-  finance/                  Pure financial domain logic
-    calculations.py         Deterministic calculations, summaries
-    demo.py                 Explicitly fictional offline sample dataset
-  data/sec/                 Public financial source integration
-    client.py               SEC HTTP client and error handling
-    extraction.py           Pure SEC XBRL data parsing and source references
-    constants.py            SEC endpoint locations
-  ai/                       LLM-specific components
-    prompts.py              Financial research prompt assembly
-    router.py               Provider selection, failover, privacy checks
-    providers/
-      base.py               Async provider interface / shared errors
-      ollama.py             Local inference implementation
-      groq.py               Cloud inference implementation
-  services/
-    research.py             Shared headless research workflow
-  storage/
-    history.py              SQLite research metadata, no prompt contents
-  adapters/discord/
-    bot.py                  Optional Discord client, calls REST API
-  discord_bot.py            Tiny compatibility launcher (not bot logic)
-  static/                   Browser UI assets
-    index.html
-    app.js
-    styles.css
-tests/                        Tests for each system boundary
-.github/workflows/           Automated CI checks
-Dockerfile, compose.yaml      Local Docker / future Oracle deploy
- docs/ARCHITECTURE.md         Design rules and extension examples
+  api/                 app.py, routes.py, advanced.py, exports.py, watchlist.py, dependencies.py
+  ai/                  router.py, prompts.py, availability.py
+    providers/          groq.py, ollama.py, base.py
+    agents/             planner.py, verification.py
+  core/                config.py, models.py
+  data/sec/            client.py, extraction.py, filings.py, fair_access.py
+  finance/             calculations.py, comparisons.py, valuation.py, demo.py
+  services/            research.py, agent.py, comparison.py, monitor.py
+  reports/             pdf.py, excel.py
+  evaluation/          benchmark.py, golden.py
+  security/            rate_limits.py
+  observability/       metrics.py
+  storage/             history.py, watchlist.py
+  adapters/discord/    bot.py
+  static/              Browser UI scripts, styles and HTML
+tests/                   Independent pytest modules and mock SEC fixtures
+docs/                    Architecture, features, evaluation and security notes
 ```
 
-**Dependency direction:** API and Discord adapt external requests; `services/` coordinates
-`finance/`, `data/`, `ai/`, and `storage/`. Pure calculation and SEC extraction modules
-have no Discord or FastAPI dependency. Providers must not import routes or storage.
-See [Architecture Guide](docs/ARCHITECTURE.md) for how to grow the project safely.
+**Dependency direction:** API/Discord adapt requests; `services/` coordinates domain and providers; `finance/` does math; `data/sec/` owns EDGAR integration; `ai/providers/` owns inference. See [Architecture Guide](docs/ARCHITECTURE.md).
 
-**Existing commands are unchanged:** `uvicorn scarascope.api:app --reload` and
-`python -m scarascope.discord_bot` still work after the reorganization.
+**Existing commands remain valid:** `uvicorn scarascope.api:app --reload` and `python -m scarascope.discord_bot`.
 
 ## Testing
 
@@ -179,17 +172,18 @@ Tests simulate provider failures and offline Ollama, verify privacy boundaries, 
 ## Deployment and security notes
 
 - Docker: `docker compose up --build`. The Compose port binds to `127.0.0.1` only. Put an authenticated HTTPS reverse proxy in front when deploying publicly.
+- Set `SCARASCOPE_API_KEY` and `SCARASCOPE_REQUIRE_AUTH=true` before public deployment. `SCARASCOPE_REQUESTS_PER_MINUTE=60` tunes the current in-process throttle.
 - **Do not assume an open Oracle VM is safe**. Configure HTTPS, firewall/security groups, credentials, and request-level rate limiting before exposing it. CORS is intentionally not broadly enabled.
 - SQLite stores only ticker, data type, inference provider, and timestamp. It does not implement per-user isolation; do not expose the history endpoint in a multi-user setup without adding identities and access controls.
 - The application is **informational**; it does not automate trades or provide tailored investment advice. Legal/compliance review would be required before operating a paid adviser-like product.
-- The first SEC version uses live, public filing *facts*. It does **not** claim to review risk-factor paragraphs, valuation assumptions, stock prices, or private filings.
+- The SEC pipeline uses public filing *facts* and a **best-effort**, separately retrieved 10-K Item 1A/7 section reader. It does not claim verified paragraph-level RAG, stock prices or private filing access.
 
 ## Next milestones
 
-1. Verify real SEC extraction across 10-K examples and improve financial-taxonomy handling.
-2. Add document ingestion, section-level source citations, and stronger evaluation fixtures.
-3. Benchmark Ollama on actual laptop hardware and establish secured Oracle ↔ laptop connectivity.
-4. Add provider health/circuit breaker, quota-aware throttling, measured latency/cost telemetry, and safe auth for multiple users.
-5. Add automated PDF report export, saved comparisons, and monitored cloud deployment.
+1. Verify live 10-K extraction across a diverse SEC corpus; add robust full-text RAG, paragraph anchors and explicit claim-evidence checking.
+2. Benchmark Ollama on the actual laptop; build the authenticated Oracle-to-laptop private connection when Oracle hosting is ready.
+3. Run genuine financial QA benchmark cases and measure answer quality, token consumption and latency by provider.
+4. Add persistent background filing checks and opt-in alerts if a real schedule becomes useful.
+5. Harden multi-user security, centralized quotas, configuration management, deployment and operational monitoring before any public launch.
 
 **License:** No license has been granted. All rights reserved unless the repository owner chooses an explicit license.

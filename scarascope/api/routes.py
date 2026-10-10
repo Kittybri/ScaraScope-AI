@@ -15,9 +15,9 @@ router = APIRouter()
 
 @router.get("/api/health")
 async def health(settings: Settings = Depends(get_settings)):
-    return {"status": "ok", "version": "0.1.0", "sec_configured": settings.sec_ready,
+    return {"status": "ok", "version": "0.2.0", "sec_configured": settings.sec_ready,
             "ollama_enabled": settings.ollama_enabled, "groq_configured": bool(settings.groq_api_key),
-            "auth_enabled": bool(settings.app_api_key)}
+            "auth_enabled": bool(settings.app_api_key), "auth_required": settings.require_auth}
 
 
 @router.get("/api/demo", response_model=ResearchResponse)

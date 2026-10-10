@@ -21,6 +21,10 @@ Discord ────> REST /api/research─┘           |
                                          core/models
 
 storage/history.py is called by the API layer to persist metadata only.
+
+New workflows have separate entry points: `api/advanced.py` (agent, compare, DCF,
+benchmark), `api/exports.py` (PDF/Excel), and `api/watchlist.py`. They delegate
+to `services/`, `finance/`, `reports/` and `storage/` rather than importing each other.
 ```
 
 - **api/** only manages HTTP, authentication, and serialization. Keep business rules out of routes.
@@ -43,7 +47,11 @@ storage/history.py is called by the API layer to persist metadata only.
 | A new research operation | `services/<use_case>.py` | service tests using fake providers |
 | A new API endpoint | `api/routes.py`, split by resource as endpoints expand | `tests/test_api.py` |
 | Discord commands | `adapters/discord/bot.py` | adapter tests, no finance logic inside |
-| Report or document export | `services/reports.py` and a separate export module | output / source-validation tests |
+| Report export | `reports/pdf.py` or `reports/excel.py` plus `api/exports.py` | output / source-validation tests |
+| Agent step / verifier | `ai/agents/` and `services/agent.py` | agent + verification tests |
+| Research evaluation | `evaluation/` and `tests/` | reproducible golden fixtures |
+| SEC narrative tool | `data/sec/filings.py` | no-network HTML fixture tests |
+| Watchlist / manual filing checks | `storage/watchlist.py`, `services/monitor.py` | injected SEC monitor tests |
 
 ## Development discipline
 

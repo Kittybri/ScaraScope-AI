@@ -6,7 +6,9 @@
   <meta name="theme-color" content="#0d2036">
   <title>ScaraScope AI | Financial Intelligence</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/advanced.css">
   <script src="/static/app.js" defer></script>
+  <script src="/static/advanced.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -51,6 +53,49 @@
       <h3 class="table-heading">Reported financial data</h3><div class="table-overflow"><table><thead><tr><th>Period end</th><th>Revenue</th><th>Operating income</th><th>Net income</th><th>Revenue growth</th><th>Op. margin</th></tr></thead><tbody id="finance-body"></tbody></table></div>
       <h3 class="table-heading">Original source filings</h3><div id="sources" class="source-grid"></div>
       <p class="disclaimer">ScaraScope is a research prototype, not an investment adviser. Financial facts may vary by accounting tags and fiscal period. Verify important numbers against the original filings. The synthetic demo does not represent a real company.</p>
+    </section>
+    <section class="advanced-lab" aria-labelledby="lab-title">
+      <div class="panel-label">04 / RESEARCH TOOLKIT</div>
+      <h2 id="lab-title">Beyond a basic chatbot.</h2>
+      <p class="muted">Run bounded research plans, compare fundamentals, stress-test financial assumptions, and export reproducible reports. No LLM key is required for the DEMO workflow.</p>
+      <div class="lab-grid">
+        <section class="panel lab-card">
+          <div class="panel-label">RESEARCH AGENT</div><h3>Traceable research workflow</h3>
+          <p class="muted">Uses the ticker, question and privacy setting above. Optional Item 1A/7 excerpts for live SEC filings.</p>
+          <button class="primary lab-button" id="agent-run" type="button">Run research agent →</button>
+          <div id="agent-output" class="lab-output" aria-live="polite"></div>
+        </section>
+        <section class="panel lab-card">
+          <div class="panel-label">PEER COMPARISON</div><h3>Company fundamentals</h3>
+          <p class="muted">Compare annual financial metrics from SEC XBRL; figures may cover different fiscal periods.</p>
+          <form id="compare-form" class="compact-form"><label for="peer-a">First ticker</label><input id="peer-a" value="MSFT" maxlength="12" required><label for="peer-b">Second ticker</label><input id="peer-b" value="GOOGL" maxlength="12" required><button type="submit" class="secondary lab-button">Compare companies</button></form>
+          <div id="compare-output" class="lab-output" aria-live="polite"></div>
+        </section>
+        <section class="panel lab-card">
+          <div class="panel-label">ILLUSTRATIVE VALUATION</div><h3>DCF scenario model</h3>
+          <p class="muted">Enter unlevered free cash flow and explicit assumptions. This does not fetch or invent FCF.</p>
+          <form id="dcf-form" class="compact-form">
+            <label for="fcf">Starting annual unlevered FCF (USD)</label><input id="fcf" type="number" min="0.01" step="any" value="100000000" required>
+            <label for="dcf-growth">Annual FCF growth (%)</label><input id="dcf-growth" type="number" min="-80" max="100" step="any" value="3" required>
+            <label for="dcf-discount">Discount rate (%)</label><input id="dcf-discount" type="number" min="0.01" max="60" step="any" value="10" required>
+            <label for="dcf-terminal">Terminal growth (%)</label><input id="dcf-terminal" type="number" min="-20" max="20" step="any" value="2" required>
+            <button type="submit" class="secondary lab-button">Calculate scenario</button>
+          </form>
+          <div id="dcf-output" class="lab-output" aria-live="polite"></div>
+        </section>
+        <section class="panel lab-card">
+          <div class="panel-label">REPORT EXPORTS & TESTING</div><h3>Portable, testable research</h3>
+          <p class="muted">Export the current ticker as PDF or Excel, or inspect the deterministic test-suite score.</p>
+          <div class="lab-actions"><button type="button" id="export-pdf" class="secondary">Download PDF</button><button type="button" id="export-xlsx" class="secondary">Download Excel</button><button type="button" id="eval-run" class="secondary">Run evaluation</button></div>
+          <div id="export-output" class="lab-output" aria-live="polite"></div>
+        </section>
+        <section class="panel lab-card">
+          <div class="panel-label">SAVED RESEARCH TICKERS</div><h3>Manual watchlist</h3>
+          <p class="muted">Saved locally. This prototype does not yet poll in the background or send alerts.</p>
+          <div class="lab-actions"><button type="button" id="watch-add" class="secondary">Watch ticker above</button><button type="button" id="watch-refresh" class="secondary">Refresh list</button><button type="button" id="watch-check" class="secondary">Check new filings</button></div>
+          <div id="watch-output" class="lab-output" aria-live="polite"></div>
+        </section>
+      </div>
     </section>
     <div id="error-panel" class="error-panel" role="alert" hidden></div>
   </main>
