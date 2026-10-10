@@ -43,3 +43,20 @@ identity/isolation and resource controls have been reviewed.
 Security checklist: run `python -m pytest -q`, inspect **CodeQL** and
 **Dependency Audit and SBOM** workflow outcomes, and review source dependencies
 before any release.
+
+## v0.9 scope updates
+
+- Prompt-injection screening normalizes Unicode NFKC and strips format marks
+  before applying additional role-delimiter/disregard-instructions patterns.
+  Obfuscated or indirect instructions can still bypass this heuristic.
+- The document-Q&A generated-answer audit rejects clearly missing evidence
+  labels, incorrect cited numerical values or units, unsupported explicit
+  fiscal-year references, and substantive sentences with no citations. It
+  **does not** prove qualitative entailment, causality or finance correctness.
+- Normal API responses include a random request ID, no-store/nosniff headers;
+  metadata-only traces are bounded, process-local, unaudited and not durable.
+- Oversized *declared* request bodies are rejected early. Chunked transfer,
+  unknown Content-Length, resource-intensive model calls, distributed quotas,
+  and network egress restrictions require independent gateway/platform controls.
+- Review `docs/OPERATIONS.md` for exactly which diagnostics may be shown and
+  what information is intentionally omitted.

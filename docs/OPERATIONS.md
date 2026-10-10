@@ -42,3 +42,43 @@ commit, Python version, and resource usage when presenting comparisons.
 The financial reference benchmark is a reconstructed-source test, not a
 human-reviewed free-form financial QA dataset or an independent held-out issuer
 corpus. Live Ollama/Groq comparisons cannot be asserted without model runs.
+
+## v0.9: request tracing and claim audits
+
+**New API request diagnostics:** `GET /api/engineering/traces` requires the
+same API-key policy as other Engineering Lab endpoints. A request ID is returned
+in `X-Request-ID` on normal API responses and reused by the SEC document Q&A
+`provenance.run_id`. Only the last 100 route-template/status/duration events in
+the current Python process are held in memory. `p50_ms` and `p95_ms` use
+nearest-rank percentiles over **that bounded, mixed-route sample**. This is not
+production observability, financial inference latency or durable history.
+
+No query strings, raw paths, client IPs, request bodies, answer texts, SEC
+excerpts or API credentials are stored in the HTTP trace queue. API responses
+also include `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`.
+On unhandled server exceptions, an internal 500 status is recorded, but an
+`X-Request-ID` response header is not guaranteed if the HTTP server generates
+the error response outside this middleware. Use a real edge proxy and a
+structured logging/incident strategy before public deployment.
+
+**Claim audits:** `POST /api/documents/ask` returns `claim_audit`. The status
+`extractive` denotes safe source excerpts with no LLM validation claim;
+`rejected` means a proposed model draft failed citation/numeric/unit/fiscal-year
+checks and the **returned answer remains extractive**; and
+`needs_semantic_review` means the draft passed those *syntactic* checks but
+its qualitative meaning has **not been verified**. Audits cannot establish
+that figures relate to the correct year/denominator just because both appear
+somewhere in a cited passage. The UI labels this explicitly.
+
+**API body bound:** requests with a declared `Content-Length` over 64 KiB are
+rejected with 413. This is intentionally modest for JSON research requests,
+but chunked bodies and streaming reverse proxies need independent maximum-body
+limits. Do not treat this as DDoS protection or a substitute for nginx/Caddy.
+
+To test locally:
+
+```bash
+python -m pytest -q tests/test_v09_tracing_claims.py
+uvicorn scarascope.api:app --reload
+# Open /engineering, run benchmark, inspect Sanitized request diagnostics
+```

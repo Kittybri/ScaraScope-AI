@@ -59,10 +59,18 @@
   parent.append(table);
   parent.append(node('p','Retrieved evidence ranking only, not independent AI answer correctness. Reviewer aliases do not prove independent review.','fine'));
  }
+ function renderTraces(data){
+  const grid=clear('trace-summary');
+  const cells=[['Sample size',data.sample_size],['p50 latency',data.p50_ms==null?'—':`${data.p50_ms} ms`],['p95 latency',data.p95_ms==null?'—':`${data.p95_ms} ms`],['HTTP errors',(data.status_counts.client_error||0)+(data.status_counts.server_error||0)]];
+  for(const [label,value] of cells){const box=node('div','','metric');box.append(node('strong',value));box.append(node('small',label));grid.append(box);}
+  const parent=clear('trace-history');
+  for(const item of data.recent){const row=document.createElement('tr');[item.run_id,item.route,item.status_code,item.latency_ms].forEach(value=>row.append(node('td',value)));parent.append(row);}
+  if(!data.recent.length){const row=document.createElement('tr');row.append(node('td','No API requests recorded.'));parent.append(row);}
+ }
  function renderHistory(data){const parent=clear('history');if(!data.items.length){parent.append(node('p','No saved runs yet. Use the benchmark CLI to save one.','muted'));return;}for(const item of data.items){const div=node('div',`${item.generated_at}: ${item.status} (${item.file})`);parent.append(div);}}
  function renderRuntime(data){const parent=clear('runtime');const counters=Object.entries(data.counters);if(!counters.length)parent.append(node('div','No live provider calls recorded yet.'));for(const [event,count]of counters)parent.append(node('div',`${event}: ${count}`));}
- async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime,corpus,realCorpus]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime'),request('/api/engineering/corpus-status'),request('/api/engineering/corpus-evaluation?require_second_review='+String(el('require-second-review').checked))]);
+ async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime,corpus,realCorpus,traces]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime'),request('/api/engineering/corpus-status'),request('/api/engineering/corpus-evaluation?require_second_review='+String(el('require-second-review').checked)),request('/api/engineering/traces')]);
    if(el('embed-eval').checked){report.qa_retrieval=await request('/api/engineering/retrieval-comparison?include_semantic=true');}
-   renderReport(report);renderHistory(history);renderRuntime(runtime);renderCorpus(corpus);renderRealCorpus(realCorpus);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
+   renderReport(report);renderHistory(history);renderRuntime(runtime);renderCorpus(corpus);renderRealCorpus(realCorpus);renderTraces(traces);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
  el('run').addEventListener('click',refresh);el('suite').addEventListener('change',e=>renderCases(e.target.value));
 })();

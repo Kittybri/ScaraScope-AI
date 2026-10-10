@@ -39,3 +39,20 @@ Current status: **v0.4 portfolio prototype**, not a production investment advice
 ## v0.8: keeping held-out scores honest
 
 A second review is an optional, strict benchmark policy rather than an assertion that data has been independently validated. The audit lists reviewer-metadata gaps, and `--require-second-review` excludes incompletely checked cases. Regression checks reject any changed question-set hash, source accession/excerpt hash, method set, review policy, or sample denominator; no unreviewed real-filing result is promoted to a portfolio score. Syntactic numeric-unit checks supplement citation labels but cannot verify qualitative meaning. See [REVIEW_PROTOCOL.md](REVIEW_PROTOCOL.md) for exact acceptance criteria.
+
+## v0.9: instrumentation and explicit non-verification
+
+- The document Q&A API correlates a response's `X-Request-ID` with its
+  source-fingerprint `provenance.run_id`. The Engineering Lab reports real
+  in-process HTTP outcome counts and p50/p95 route latency, not fabricated
+  inference costs or availability figures.
+- A proposed LLM response now receives a structured claim audit. Clear label,
+  unit, fiscal-year and uncited-substantive-claim failures trigger the existing
+  extractive fallback. A passing syntactic audit is visibly
+  `needs_semantic_review`, **never** `financially_verified`.
+- Deliberate Unicode and role-token prompt-injection probes, oversized API
+  requests and missing citations are covered by regression tests. A passing
+  filter test is only evidence for the tested cases, not general safety.
+- Previous v0.4 wording elsewhere in this historical case study describes
+  that earlier milestone; the current prototype and test counts are in the
+  top-level README and current CI, not assumed from historical examples.

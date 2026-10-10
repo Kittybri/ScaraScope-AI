@@ -50,3 +50,21 @@ the test suite, GitHub Actions runs, and documented limitations.
 **Avoid:** unsourced perfect accuracy claims, fake uptime numbers, silently
 falling back to cloud from `local_only`, and making more chat commands at the
 expense of correctness and auditability.
+
+## Implemented in v0.9 (local/prototype scope only)
+
+- [x] HTTP request IDs and bounded process-local route/status/latency traces;
+      the document-Q&A provenance run ID matches the HTTP response header.
+- [x] Engineering Lab trace panel shows real local request p50/p95 and errors,
+      explicitly without live provider or cloud-performance claims.
+- [x] Structured generated-answer audit distinguishes rejected citation/unit/
+      period mistakes, exact extractive fallback, and syntactically acceptable
+      claims that **still require semantic human verification**.
+- [x] Additional indirect prompt-injection patterns, Unicode normalization,
+      API declared-size limit, no-store API headers and adversarial regression tests.
+- [x] Documented detection scope, tracing retention and missing public-deployment protections.
+
+**Remaining security gaps:** this in-app Content-Length gate is not a streaming
+body-size limiter. Public hosting needs a hardened reverse proxy with streaming
+limits, network egress allowlisting, private authentication, cross-worker quotas,
+and a reviewed incident/retention policy. These were not simulated as complete.

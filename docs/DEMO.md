@@ -16,3 +16,18 @@ Before each demo: `python -m pytest -q`; `python -m scarascope.evaluation.runner
 After showing the existing fixture benchmark, open `/engineering`, locate the **Real-filing evaluation readiness** area and enable **Require independent second review**. If local reviewed SEC data is absent, the system reports `not_evaluated` rather than promoting the reconstructed-table score to real SEC/LLM accuracy. Explain that the audit CLI lists unreviewed questions and missing reviewer rationales, while a pinned-baseline comparison refuses changed source hashes, question sets or denominators. See [REVIEW_PROTOCOL.md](REVIEW_PROTOCOL.md).
 
 For a strong live example once you have reviewed source data, run a real-corpus strict benchmark, save its JSON, and reproduce the baseline comparison. Be prepared to show question-level misses and clarify that exact-passage retrieval is not equivalent to verifying arbitrary AI-written prose. Never claim independent review was performed unless it actually was.
+
+## v0.9: show failure modes and request provenance
+
+1. Start the application and use `DEMO` to run a fictional filing question.
+   Inspect the JSON through FastAPI docs: the `X-Request-ID` response header
+   equals `provenance.run_id` and the `claim_audit` is `extractive`.
+2. Open `/engineering`, run the offline benchmark, and view **Sanitized request
+   diagnostics**. Point out the sample count, actual local p50/p95 HTTP
+   request latency and recent status codes. Do **not** call this LLM latency.
+3. Run `python -m pytest -q tests/test_v09_tracing_claims.py` and explain
+   the deliberately failing fabricated citations/periods, uncited claims,
+   Unicode prompt injection and oversized request regression cases.
+4. State the limitation plainly: passing syntactic verification is not a
+   guarantee that a model's explanation is true. The real filing corpus still
+   needs independent reviewers and live provider quality evaluation.

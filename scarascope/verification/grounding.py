@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from typing import Protocol
+from .sentences import cited_sentences
 
 
 class Passage(Protocol):
@@ -30,16 +31,9 @@ def check_sentence_grounding(answer: str, sources: list[Passage]) -> list[str]:
     problems=[]
     if not by_label:
         return ['No evidence sources were provided.']
-    fragments = [x.strip() for x in re.split(r'(?<=[.!?])\s+|\n+',answer.strip()) if x.strip()]
-    if not fragments:
+    merged = cited_sentences(answer)
+    if not merged:
         return ['Empty answer.']
-    # A citation in its own fragment after punctuation belongs to the prior sentence.
-    merged = []
-    for fragment in fragments:
-        if merged and re.fullmatch(r'(?:\[E\d+\]\s*)+',fragment):
-            merged[-1] += ' ' + fragment
-        else:
-            merged.append(fragment)
     for number,fragment in enumerate(merged,1):
         cited=set(_LABEL.findall(fragment))
         nums=_numbers(fragment)

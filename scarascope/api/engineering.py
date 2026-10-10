@@ -7,6 +7,7 @@ from ..ai.retrieval.semantic import LocalSentenceEncoder
 from ..core.config import Settings
 from .dependencies import get_settings
 from ..observability.metrics import snapshot
+from ..observability.tracing import trace_snapshot
 from ..evaluation.corpus.snapshots import load_snapshots
 from ..evaluation.corpus.annotations import load_annotations, validate_annotations
 from ..evaluation.corpus.scoring import compare_corpus
@@ -28,6 +29,12 @@ async def history():
 @router.get("/runtime")
 async def runtime():
     return snapshot()
+
+
+@router.get("/traces")
+async def traces():
+    """Bounded, sanitized per-worker HTTP diagnostics, never request content."""
+    return trace_snapshot()
 
 
 @router.get("/retrieval-comparison")

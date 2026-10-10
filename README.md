@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.8 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.9 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -166,6 +166,16 @@ The Engineering Lab now displays real-corpus readiness separately from existing 
 
 See [Independent Review and Regression Protocol](docs/REVIEW_PROTOCOL.md), [Real SEC Corpus Guide](docs/REAL_SEC_CORPUS.md) and [Engineering Lab](http://127.0.0.1:8000/engineering).
 
+## New in v0.9: explainable claim audits and sanitized tracing
+
+ScaraScope document Q&A now includes a **structured claim audit**. It rejects clear unknown-citation, unsupported number/unit, explicit fiscal-year and uncited substantive-claim mistakes, then falls back to source excerpts. A syntactically accepted model answer is still labeled `needs_semantic_review`, **not** fact-checked: the system cannot guarantee qualitative meaning, causality or valid financial denominators.
+
+Normal API responses include an `X-Request-ID` correlated with document evidence provenance. The Engineering Lab shows **real local HTTP request p50/p95 latency, error counts and recent run IDs** using a bounded, process-local buffer without storing prompts, keys, IP addresses or query strings. This is not measured Groq/Ollama latency or hosted service uptime.
+
+Additional tests exercise Unicode-obfuscated instruction injection, unsupported citations and years, and large declared request bodies. A 64 KiB Content-Length gate is only a secondary safeguard; secure public deployment still needs a real reverse-proxy body limit and network controls.
+
+See [Operations and Trace Limits](docs/OPERATIONS.md), [Threat Model](docs/THREAT_MODEL.md) and [Engineering Roadmap](docs/ROADMAP.md). The offline regression tests do **not** establish live SEC answer accuracy or semantic verification.
+
 ## Quick start
 
 Run a **fully offline fictional demo**, with no API keys or Oracle account required.
@@ -200,7 +210,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **113 passing tests** |
+| Full automated Python test suite | **124 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

@@ -39,6 +39,14 @@
         const trace = data.provenance;
         add(output, 'small', `Run ${trace.run_id} · ${trace.retrieval_strategy} retrieval ${trace.retrieval_ms} ms · total ${trace.total_ms} ms · model ${trace.model}`, 'muted');
       }
+      if (data.claim_audit) {
+        const audit = data.claim_audit;
+        const label = audit.status === 'rejected' ? 'Model draft rejected; extractive excerpts shown' :
+          audit.status === 'extractive' ? 'Extractive excerpts; no generated claim certified' :
+          'Citation checks passed; qualitative claims still need review';
+        add(output, 'p', `Claim audit: ${label} · ${audit.cited_sentences}/${audit.checked_sentences} sentences cited`, 'muted');
+        for (const issue of audit.issues) add(output, 'small', issue, 'muted');
+      }
       if (data.evidence.length) {
         add(output, 'h4', `Retrieved passages (${data.evidence.length})`);
         for (const passage of data.evidence) {

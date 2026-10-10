@@ -20,6 +20,8 @@ from ..ai.router import ModelRouter
 from ..verification.citations import check_answer_citations
 from ..verification.grounding import check_sentence_grounding
 from ..verification.numeric_context import check_cited_units
+from ..verification.claim_audit import ClaimAudit, audit_generated_answer, check_cited_periods
+from ..observability.tracing import request_id
 from ..core.config import Settings
 from ..core.models import ResearchRequest
 from ..data.sec import SECClient
@@ -63,6 +65,7 @@ class DocumentAnswer(BaseModel):
     warnings: list[str] = Field(default_factory=list)
     citation_format_validated: bool = False
     provenance: RunProvenance | None = None
+    claim_audit: ClaimAudit | None = None
 
 
 _SYSTEM = """You are ScaraScope AI, a cautious SEC document analyst.
@@ -85,7 +88,7 @@ def _prompt(question: str, sources: list[CitedPassage], form: str) -> str:
 def valid_citations(answer: str, sources: list[CitedPassage]) -> bool:
     """Checks reference formatting only. It does not fact-check the model's prose."""
     return not (check_answer_citations(answer, sources) or check_sentence_grounding(answer, sources)
-                or check_cited_units(answer, sources))
+                or check_cited_units(answer, sources) or check_cited_periods(answer, sources))
 
 
 def _extractive(sources: list[CitedPassage]) -> str:
@@ -128,8 +131,9 @@ async def answer_document_question(
     router: ModelRouter | None = None, encoder: EmbeddingEncoder | None = None,
 ) -> DocumentAnswer:
     started = perf_counter()
+    trace_args = {"run_id": request_id()} if request_id() else {}
     trace = RunProvenance(retrieval_strategy=request.retrieval_strategy, privacy_policy=request.privacy,
-                          form=request.form)
+                          form=request.form, **trace_args)
     if request.privacy == "local_only" and request.provider == "cloud":
         raise ValueError("Cloud provider conflicts with local-only privacy.")
     demo = request.ticker == "DEMO"
@@ -178,6 +182,7 @@ async def answer_document_question(
     provider_name = "deterministic"
     status: Literal["synthesized", "extractive", "insufficient_evidence", "filing_unavailable"] = "extractive"
     citation_ok = True  # Extractive response is generated from references directly.
+    claim_audit = audit_generated_answer(answer, references, extractive=True)
     injection_suspected = suspicious_source_instructions(references)
     if injection_suspected:
         warnings.append("Possible instructions detected inside retrieved filing text; optional AI synthesis was skipped. Review source excerpts directly.")
@@ -188,13 +193,16 @@ async def answer_document_question(
         model_output = await (router or ModelRouter(settings)).explain(
             llm_request, _SYSTEM, _prompt(request.question, references, request.form), answer)
         trace.generation_ms = round((perf_counter() - generation_started) * 1000, 3)
-        if model_output.provider != "deterministic" and valid_citations(model_output.text, references):
+        model_audit = audit_generated_answer(model_output.text, references) if model_output.provider != "deterministic" else None
+        if model_audit is not None and model_audit.status != "rejected":
             answer = model_output.text
             provider_name = model_output.provider
             trace.model = model_output.model
             status = "synthesized"
+            claim_audit = model_audit
         elif model_output.provider != "deterministic":
-            warnings.append("The model returned missing, malformed or unknown evidence labels, or an ungrounded numeric claim. Replaced with verbatim source excerpts.")
+            warnings.append("The model returned missing, malformed or unknown evidence labels, or mismatched numerical units or fiscal-year references. Replaced with verbatim source excerpts.")
+            claim_audit = model_audit
         elif model_output.note:
             warnings.append("LLM synthesis unavailable. Returned retrieved evidence only.")
     warnings.append("Evidence labels and sentence-level numeric claims were checked; semantic truth of AI conclusions was not established.")
@@ -206,4 +214,4 @@ async def answer_document_question(
                           answer=answer, status=status, provider=provider_name, evidence=references,
                           filing_url=filing.filing_url or (references[0].filing_url if references else None),
                           accession=filing.accession, warnings=warnings,
-                          citation_format_validated=citation_ok, provenance=trace)
+                          citation_format_validated=citation_ok, provenance=trace, claim_audit=claim_audit)

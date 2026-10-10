@@ -36,3 +36,19 @@
 - The history endpoint reads only bounded local `*.json` files within the configured code directory, ignores symlinks/oversized records, and never accepts a user-controlled filesystem path.
 - Source URL checks validate SEC HTTPS hosts and accessions, but do not guarantee the linked statements support an LLM's qualitative paraphrase.
 - The numeric claim check is deliberately conservative and can reject legitimate calculated numbers that are not written in retrieved excerpts.
+
+## v0.9 additions and limits
+
+- A small request `Content-Length` gate returns HTTP 413 at 64 KiB; enforce
+  actual byte limits at the reverse proxy as well, especially for chunked
+  requests. This is not full request-body streaming protection.
+- API responses use `Cache-Control: no-store` and `X-Content-Type-Options:
+  nosniff`; CORS/authentication and transport-level HTTPS still require proper
+  deployment configuration.
+- `/api/engineering/traces` exposes only bounded request IDs, safe route
+  templates, HTTP response codes and durations. It is protected by the
+  configured shared API-key policy. Without `SCARASCOPE_REQUIRE_AUTH=true`,
+  this remains a local-development feature; do not expose operational metadata
+  from a public unauthenticated instance.
+- `claim_audit` reports what automated citation, number, unit and explicit-FY
+  checks did, and always discloses that semantic correctness is unproven.

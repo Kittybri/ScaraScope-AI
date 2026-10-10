@@ -8,6 +8,7 @@ from __future__ import annotations
 from decimal import Decimal, InvalidOperation
 import re
 from typing import Protocol
+from .sentences import cited_sentences
 
 class CitedSource(Protocol):
     label: str
@@ -38,7 +39,7 @@ def check_cited_units(answer: str, sources: list[CitedSource]) -> list[str]:
     """
     by_label={f"[{p.label}]":p.excerpt for p in sources}
     problems=[]
-    for position,fragment in enumerate(_SENTENCE.split(answer.strip()),1):
+    for position,fragment in enumerate(cited_sentences(answer),1):
         cites=set(_LABEL.findall(fragment))
         if not cites or not cites.issubset(by_label):
             continue  # citation and uncited-numeric checks are enforced separately
