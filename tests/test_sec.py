@@ -1,7 +1,7 @@
 from datetime import date
 import pytest
 
-from scarascope.sec import SECClient, SECError, extract_annual_financials
+from scarascope.data.sec import SECClient, SECError, extract_annual_financials
 
 
 def annual(end: str, start: str, val: int, accession: str, filed: str = "2026-02-01"):

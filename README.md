@@ -111,27 +111,60 @@ python -m scarascope.discord_bot
 
 Commands: `!scope DEMO`, `!scope MSFT`, and `!scopehelp`. Run FastAPI separately first. For a separate deployment, set `SCARASCOPE_API_URL` to its authenticated, private URL.
 
-## Project structure
+## Architecture and project structure
+
+The app is deliberately organized **by responsibility**, not as a large `bot.py` file.
+The financial engine is independent of the interface. Adding a Discord command, web page,
+or future mobile client does not require changing financial calculations or model providers.
 
 ```text
 scarascope/
-  api.py            FastAPI endpoints and API-key protection
-  config.py         Environment-based settings, no committed credentials
-  sec.py            SEC EDGAR client, annual XBRL extraction and provenance
-  finance.py        Deterministic ratios and rule-based summaries
-  demo.py           Fictional no-key sample data
-  models.py         Typed API contracts
-  providers.py      Ollama/Groq implementations
-  router.py         Complexity routing, privacy policy and fallback
-  service.py        Headless research orchestration
-  history.py        Minimal SQLite request metadata history
-  discord_bot.py    Optional Discord adapter
-  static/           Responsive single-page dashboard
- tests/             Focused deterministic, API, routing, and parsing tests
-.github/workflows/  GitHub Actions CI
-Dockerfile           Ready for later deployment
-compose.yaml         Local-only port binding by default
+  api/                      HTTP boundary: ASGI app, routes, auth dependencies
+    __init__.py             Public `scarascope.api:app` entry point
+    app.py                  FastAPI application / static frontend mount
+    routes.py               Health, demo, research and history endpoints
+    dependencies.py         Settings injection and API key protection
+  core/                     Cross-cutting types and configuration
+    config.py               Environment settings and credentials
+    models.py               Typed request, response, and financial contracts
+  finance/                  Pure financial domain logic
+    calculations.py         Deterministic calculations, summaries
+    demo.py                 Explicitly fictional offline sample dataset
+  data/sec/                 Public financial source integration
+    client.py               SEC HTTP client and error handling
+    extraction.py           Pure SEC XBRL data parsing and source references
+    constants.py            SEC endpoint locations
+  ai/                       LLM-specific components
+    prompts.py              Financial research prompt assembly
+    router.py               Provider selection, failover, privacy checks
+    providers/
+      base.py               Async provider interface / shared errors
+      ollama.py             Local inference implementation
+      groq.py               Cloud inference implementation
+  services/
+    research.py             Shared headless research workflow
+  storage/
+    history.py              SQLite research metadata, no prompt contents
+  adapters/discord/
+    bot.py                  Optional Discord client, calls REST API
+  discord_bot.py            Tiny compatibility launcher (not bot logic)
+  static/                   Browser UI assets
+    index.html
+    app.js
+    styles.css
+tests/                        Tests for each system boundary
+.github/workflows/           Automated CI checks
+Dockerfile, compose.yaml      Local Docker / future Oracle deploy
+ docs/ARCHITECTURE.md         Design rules and extension examples
 ```
+
+**Dependency direction:** API and Discord adapt external requests; `services/` coordinates
+`finance/`, `data/`, `ai/`, and `storage/`. Pure calculation and SEC extraction modules
+have no Discord or FastAPI dependency. Providers must not import routes or storage.
+See [Architecture Guide](docs/ARCHITECTURE.md) for how to grow the project safely.
+
+**Existing commands are unchanged:** `uvicorn scarascope.api:app --reload` and
+`python -m scarascope.discord_bot` still work after the reorganization.
 
 ## Testing
 

@@ -1,6 +1,6 @@
 """Clearly labeled fictional finance data, usable with no credentials or internet."""
 from datetime import date
-from .models import AnnualFinancials
+from ..core.models import AnnualFinancials
 
 
 def demo_financials(years: int = 3) -> list[AnnualFinancials]:

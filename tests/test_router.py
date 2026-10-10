@@ -1,9 +1,9 @@
 import pytest
 
-from scarascope.config import Settings
-from scarascope.models import ResearchRequest
-from scarascope.providers import ProviderError
-from scarascope.router import ModelRouter, is_complex
+from scarascope.core.config import Settings
+from scarascope.core.models import ResearchRequest
+from scarascope.ai.providers.base import ProviderError
+from scarascope.ai.router import ModelRouter, is_complex
 
 
 class FakeProvider:

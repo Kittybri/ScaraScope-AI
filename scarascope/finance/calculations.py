@@ -1,5 +1,5 @@
 """Financial calculations are deterministic, not delegated to an LLM."""
-from .models import AnnualFinancials
+from ..core.models import AnnualFinancials
 
 
 def ratio_pct(numerator: float | None, denominator: float | None) -> float | None:

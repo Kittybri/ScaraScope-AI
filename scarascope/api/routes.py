@@ -1,52 +1,32 @@
-"""FastAPI entry point. API documentation is available at /docs."""
-from pathlib import Path
+"""Thin HTTP routes; research logic belongs in services, never here."""
 import logging
-import secrets
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-
-from .config import Settings
-from .history import add_history, list_history
-from .models import ResearchRequest, ResearchResponse
-from .sec import SECError
-from .service import run_research
+from .dependencies import get_settings, require_api_key
+from ..core.config import Settings
+from ..core.models import ResearchRequest, ResearchResponse
+from ..data.sec import SECError
+from ..services.research import run_research
+from ..storage.history import add_history, list_history
 
 logger = logging.getLogger(__name__)
-app = FastAPI(title="ScaraScope AI", version="0.1.0", description="Source-grounded financial research and hybrid LLM provider routing")
-STATIC_DIR = Path(__file__).resolve().parent / "static"
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+router = APIRouter()
 
 
-def get_settings() -> Settings:
-    return Settings()
-
-
-def require_api_key(x_api_key: str | None = Header(default=None), settings: Settings = Depends(get_settings)) -> None:
-    if settings.app_api_key and not secrets.compare_digest(x_api_key or "", settings.app_api_key):
-        raise HTTPException(status_code=401, detail="Missing or invalid API key.")
-
-
-@app.get("/", include_in_schema=False)
-async def index():
-    return FileResponse(STATIC_DIR / "index.html")
-
-
-@app.get("/api/health")
+@router.get("/api/health")
 async def health(settings: Settings = Depends(get_settings)):
     return {"status": "ok", "version": "0.1.0", "sec_configured": settings.sec_ready,
             "ollama_enabled": settings.ollama_enabled, "groq_configured": bool(settings.groq_api_key),
             "auth_enabled": bool(settings.app_api_key)}
 
 
-@app.get("/api/demo", response_model=ResearchResponse)
+@router.get("/api/demo", response_model=ResearchResponse)
 async def demo(settings: Settings = Depends(get_settings)):
     """Synthetic company preview; deliberately requires no keys or external services."""
     return await run_research(ResearchRequest(ticker="DEMO", provider="none"), settings)
 
 
-@app.post("/api/research", response_model=ResearchResponse, dependencies=[Depends(require_api_key)])
+@router.post("/api/research", response_model=ResearchResponse, dependencies=[Depends(require_api_key)])
 async def research(request: ResearchRequest, settings: Settings = Depends(get_settings)):
     if request.privacy == "local_only" and request.provider == "cloud":
         raise HTTPException(status_code=400, detail="Cloud provider conflicts with local-only privacy.")
@@ -61,6 +41,6 @@ async def research(request: ResearchRequest, settings: Settings = Depends(get_se
     return result
 
 
-@app.get("/api/history", dependencies=[Depends(require_api_key)])
+@router.get("/api/history", dependencies=[Depends(require_api_key)])
 async def history(limit: int = Query(default=10, ge=1, le=100), settings: Settings = Depends(get_settings)):
     return {"items": list_history(settings.history_db_path, limit)}

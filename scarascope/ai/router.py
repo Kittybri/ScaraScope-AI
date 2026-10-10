@@ -1,7 +1,9 @@
 """Simple deterministic routing and provider fallback, with privacy enforcement."""
-from .config import Settings
-from .models import LLMResult, ResearchRequest
-from .providers import GroqProvider, OllamaProvider, ProviderError
+from ..core.config import Settings
+from ..core.models import LLMResult, ResearchRequest
+from .providers.base import LLMProvider, ProviderError
+from .providers.groq import GroqProvider
+from .providers.ollama import OllamaProvider
 
 COMPLEX_WORDS = {"compare", "valuation", "forecast", "scenario", "model", "sensitivity", "multi-step", "acquisition", "discounted", "regression"}
 
@@ -12,7 +14,7 @@ def is_complex(question: str, years: int) -> bool:
 
 
 class ModelRouter:
-    def __init__(self, settings: Settings, local: OllamaProvider | None = None, cloud: GroqProvider | None = None):
+    def __init__(self, settings: Settings, local: LLMProvider | None = None, cloud: LLMProvider | None = None):
         self.settings = settings
         self.local = local or OllamaProvider(settings)
         self.cloud = cloud or GroqProvider(settings)

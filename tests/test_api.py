@@ -1,7 +1,7 @@
 from pathlib import Path
 from fastapi.testclient import TestClient
 from scarascope.api import app, get_settings
-from scarascope.config import Settings
+from scarascope.core.config import Settings
 
 
 def test_demo_and_browser_without_keys(tmp_path: Path):

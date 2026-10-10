@@ -1,7 +1,7 @@
 from datetime import date
-from scarascope.demo import demo_financials
-from scarascope.finance import deterministic_summary, enrich_financials, ratio_pct
-from scarascope.models import AnnualFinancials, ResearchRequest
+from scarascope.finance.demo import demo_financials
+from scarascope.finance.calculations import deterministic_summary, enrich_financials, ratio_pct
+from scarascope.core.models import AnnualFinancials, ResearchRequest
 
 
 def test_demo_is_fictional_and_calculations_are_correct():

@@ -1,0 +1,1 @@
+"""Discord-only interface adapter."""
