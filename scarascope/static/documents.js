@@ -18,7 +18,8 @@
     const question = $('document-question').value.trim();
     const body = {
       ticker, question, form: $('document-form-type').value,
-      top_k: 5, provider: $('provider').value, privacy: $('privacy').value,
+      top_k: 5, retrieval_strategy: $('document-retrieval').value,
+      provider: $('provider').value, privacy: $('privacy').value,
     };
     output.replaceChildren();
     add(output, 'p', 'Searching filing excerpts…');

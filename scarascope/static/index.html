@@ -103,6 +103,8 @@
           <form id="document-form" class="compact-form">
             <label for="document-form-type">Filing type</label>
             <select id="document-form-type"><option value="10-K">10-K (annual)</option><option value="10-Q">10-Q (quarterly)</option></select>
+            <label for="document-retrieval">Evidence ranking</label>
+            <select id="document-retrieval"><option value="lexical">Lexical baseline</option><option value="bm25">BM25 (experimental)</option></select>
             <label for="document-question">Document question</label>
             <textarea id="document-question" rows="3" maxlength="700" minlength="6" required>What cybersecurity risks are discussed?</textarea>
             <button class="secondary lab-button" type="submit" id="document-submit">Find cited evidence →</button>

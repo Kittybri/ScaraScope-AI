@@ -14,7 +14,8 @@ jobs:
           cache-dependency-path: pyproject.toml
       - run: python -m pip install -e '.[test]'
       - run: python -m compileall -q scarascope
-      - run: python -m pytest -q
+      - name: Run all tests and export JUnit results
+        run: python -m pytest -q --junitxml="$RUNNER_TEMP/pytest-results.xml"
       - name: Produce reproducible offline benchmark report
         run: python -m scarascope.evaluation.runner --fail-on-regression --output "$RUNNER_TEMP/scarascope-benchmark.json" > /dev/null
       - name: Upload benchmark JSON artifact
@@ -23,4 +24,11 @@ jobs:
         with:
           name: scarascope-offline-benchmarks
           path: ${{ runner.temp }}/scarascope-benchmark.json
+          if-no-files-found: warn
+      - name: Upload pytest JUnit artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scarascope-pytest-results
+          path: ${{ runner.temp }}/pytest-results.xml
           if-no-files-found: warn

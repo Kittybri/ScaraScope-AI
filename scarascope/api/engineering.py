@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends
 from .dependencies import require_api_key
 from ..evaluation.runner import run_all, recent_reports
+from ..evaluation.heldout.evaluator import compare_retrievers
 from ..observability.metrics import snapshot
 
 router = APIRouter(prefix="/api/engineering", tags=["Engineering Lab"], dependencies=[Depends(require_api_key)])
@@ -20,3 +21,9 @@ async def history():
 @router.get("/runtime")
 async def runtime():
     return snapshot()
+
+
+@router.get("/retrieval-comparison")
+async def retrieval_comparison():
+    """Reproducible held-out question ranking; no inference or network calls."""
+    return compare_retrievers(split="heldout")

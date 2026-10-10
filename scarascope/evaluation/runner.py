@@ -16,6 +16,7 @@ from .benchmark import run_benchmark
 from .financial_accuracy import run_financial_benchmark
 from .reliability import run_reliability_checks
 from .retrieval import evaluate_retrieval
+from .heldout.evaluator import compare_retrievers
 
 DEFAULT_DIR = Path("data/benchmarks")
 MAX_HISTORY_BYTES = 2_000_000
@@ -27,11 +28,17 @@ async def run_all() -> dict:
     retrieval = evaluate_retrieval()
     reliability = await run_reliability_checks()
     groups = {"financial":financial,"arithmetic":arithmetic,"retrieval":retrieval,"reliability":reliability}
-    status = "passed" if all(group["passed"] == group["total"] and group["total"] > 0 for group in groups.values()) else "failed"
-    return {"report_version":1,"generated_at":datetime.now(timezone.utc).isoformat(),
+    qa = compare_retrievers(split="heldout")
+    baseline = qa["methods"]["lexical"]["metrics"]
+    candidate = qa["methods"]["bm25"]["metrics"]
+    gates = {"bm25_recall_at_3_not_below_lexical": candidate["recall_at_3"] >= baseline["recall_at_3"],
+             "bm25_abstention_not_below_lexical": candidate["abstention_accuracy"] >= baseline["abstention_accuracy"]}
+    status = "passed" if all(group["passed"] == group["total"] and group["total"] > 0 for group in groups.values()) and all(gates.values()) else "failed"
+    return {"report_version":2,"generated_at":datetime.now(timezone.utc).isoformat(),
             "status":status,"runtime":{"python":platform.python_version(),"commit":os.getenv("GITHUB_SHA","")[:40] or None},
-            "suites":groups,
+            "suites":groups, "qa_retrieval":qa, "retrieval_regression_gates":gates,
             "limitations":["Includes historical SEC-sourced numerical fixtures and synthetic retrieval/provider simulations.",
+                           "QA A/B uses source-linked reconstructed table extracts, not raw filing passages. Questions are held out, issuers/figures are not.",
                            "No network calls, paid APIs, live model reasoning or live SEC parsing were evaluated.",
                            "Citation labels or source domains do not establish semantic truth of an LLM response."]}
 
@@ -58,7 +65,7 @@ def recent_reports(directory: Path = DEFAULT_DIR, limit: int = 8) -> list[dict]:
             continue
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-            if payload.get("report_version") == 1 and "suites" in payload:
+            if payload.get("report_version") in (1, 2) and "suites" in payload:
                 reports.append({"file":path.name,"generated_at":payload.get("generated_at"),
                                 "status":payload.get("status"),
                                 "suites":{name:{"passed":v.get("passed"),"total":v.get("total")}

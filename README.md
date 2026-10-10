@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.4 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.5 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -45,6 +45,15 @@
 | **Engineering Lab** | Offline benchmarks, automated tests, failure simulations, recorded results, and a dedicated inspection dashboard. |
 
 **Important boundaries:** Filing extraction can miss sections, evidence references are not guaranteed exact paragraph deep links, and citation-label checks do not prove the semantic truth of arbitrary AI answers. Embedding-based RAG and live LLM quality benchmarks are future work.
+
+## New in v0.5: measured financial evidence retrieval
+
+ScaraScope now includes an offline, SEC-source-linked **question-held-out retrieval benchmark**: 17 development questions and 14 held-out questions (12 answerable and 2 unanswerable). On the initial held-out run, BM25 achieved **Recall@3 of 100% versus 50% for the existing lexical baseline**; both methods abstained correctly on only **1 of 2** unanswerable questions. These numbers describe an intentionally small **reconstructed financial-reference corpus**, not raw SEC filing passages, model answer accuracy, or independent issuer-level generalization. The misses and denominators remain visible in the [Engineering Lab](http://127.0.0.1:8000/engineering).
+
+- Optional **BM25** evidence ranking in *Ask a filing*; lexical remains the default.
+- Sentence-level **numerical claim checks** against the *specific cited passage*, with conservative extractive fallback.
+- Reproducible comparison JSON, frozen gold metadata, regression gates, JUnit CI artifacts, and a separate **CodeQL security-analysis workflow**.
+- See [v0.5 methodology and caveats](docs/QA_BENCHMARKS.md) and the [six-minute interview demo](docs/DEMO.md).
 
 ## Quick start
 
@@ -80,7 +89,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **60 passing tests** |
+| Full automated Python test suite | **69 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

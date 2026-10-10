@@ -10,9 +10,10 @@ import re
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
-from ..ai.retrieval import EvidencePassage, chunk_sections, search_passages
+from ..ai.retrieval import EvidencePassage, chunk_sections, search_passages, search_bm25
 from ..ai.router import ModelRouter
 from ..verification.citations import check_answer_citations
+from ..verification.grounding import check_sentence_grounding
 from ..core.config import Settings
 from ..core.models import ResearchRequest
 from ..data.sec import SECClient
@@ -24,6 +25,7 @@ class DocumentQuestion(BaseModel):
     question: str = Field(min_length=6, max_length=700)
     form: Literal["10-K", "10-Q"] = "10-K"
     top_k: int = Field(default=4, ge=1, le=8)
+    retrieval_strategy: Literal["lexical", "bm25"] = "lexical"
     provider: Literal["auto", "local", "cloud", "none"] = "auto"
     privacy: Literal["cloud_ok", "local_only"] = "cloud_ok"
 
@@ -75,7 +77,7 @@ def _prompt(question: str, sources: list[CitedPassage], form: str) -> str:
 
 def valid_citations(answer: str, sources: list[CitedPassage]) -> bool:
     """Checks reference formatting only. It does not fact-check the model's prose."""
-    return not check_answer_citations(answer, sources)
+    return not (check_answer_citations(answer, sources) or check_sentence_grounding(answer, sources))
 
 
 def _extractive(sources: list[CitedPassage]) -> str:
@@ -136,14 +138,15 @@ async def answer_document_question(
                               status="filing_unavailable", provider="none", filing_url=filing.filing_url,
                               accession=filing.accession, warnings=warnings)
 
-    candidates = search_passages(chunk_sections(filing.sections), request.question, request.top_k)
+    ranker = search_bm25 if request.retrieval_strategy == "bm25" else search_passages
+    candidates = ranker(chunk_sections(filing.sections), request.question, request.top_k)
     references = [CitedPassage(**passage.model_dump(), label=f"E{i}") for i, passage in enumerate(candidates, 1)]
     if not references:
         return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                               data_kind="synthetic_demo" if demo else "sec_live", question=request.question,
                               answer=_extractive([]), status="insufficient_evidence", provider="none",
                               evidence=[], filing_url=filing.filing_url, accession=filing.accession,
-                              warnings=warnings+["No lexical match. A lack of matching passages does not prove the filing lacks the information."])
+                              warnings=warnings+["No retrieval match. A lack of matching passages does not prove the filing lacks the information."])
     answer = _extractive(references)
     provider_name = "deterministic"
     status: Literal["synthesized", "extractive", "insufficient_evidence", "filing_unavailable"] = "extractive"
@@ -161,7 +164,7 @@ async def answer_document_question(
             warnings.append("The model returned missing, malformed or unknown evidence labels, or an ungrounded numeric claim. Replaced with verbatim source excerpts.")
         elif model_output.note:
             warnings.append("LLM synthesis unavailable. Returned retrieved evidence only.")
-    warnings.append("Evidence labels and explicit copied numbers were checked; semantic truth of AI conclusions was not established.")
+    warnings.append("Evidence labels and sentence-level numeric claims were checked; semantic truth of AI conclusions was not established.")
     warnings.append("Source URLs lead to the SEC filing, not guaranteed paragraph-level anchors; excerpt offsets refer to extracted text.") if not demo else None
     return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                           data_kind="synthetic_demo" if demo else "sec_live", question=request.question,

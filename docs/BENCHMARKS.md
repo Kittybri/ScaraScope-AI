@@ -1,3 +1,5 @@
+> **v0.5:** See [Source-linked financial Q&A retrieval benchmark](QA_BENCHMARKS.md) for the independent lexical/BM25 A/B suite, sample sizes, held-out split caveats, and measured regression results.
+
 # Engineering validation: reproducible benchmarks
 
 ScaraScope's **Engineering Lab** at `/engineering` runs entirely offline. Results are **test outcomes**, not marketing estimates. This release provides reproducible evidence for deterministic financial processing, not a score for free-form LLM reasoning or live EDGAR correctness.

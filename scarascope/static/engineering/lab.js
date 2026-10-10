@@ -16,6 +16,18 @@
   for(const [name,score] of Object.entries(suites)){const box=node('div','','metric');box.append(node('strong',`${score.passed}/${score.total}`));box.append(node('small',labels[name]??name));box.append(node('span',`${score.total?Math.round(score.passed/score.total*100):0}% fixture pass rate`,'detail'));grid.append(box);}
   el('integrity').textContent=`Dataset SHA-256: ${data.suites.financial.dataset_sha256} · Python ${data.runtime.python} · ${data.suites.financial.companies.join(', ')} · offline results only.`;
   const selector=el('suite');selector.replaceChildren();Object.keys(suites).forEach(name=>{const option=node('option',name);option.value=name;selector.append(option);});selector.disabled=false;selector.value='financial';renderCases('financial');
+  const qa=data.qa_retrieval;
+  const comparison=clear('qa-comparison');
+  const format=x=>`${(x*100).toFixed(1)}%`;
+  const misses=clear('qa-misses');
+  for(const [method,result] of Object.entries(qa.methods)){
+   const m=result.metrics;const tr=document.createElement('tr');
+   [method.toUpperCase(), format(m.recall_at_1),format(m.recall_at_3),format(m.recall_at_5),m.mrr_at_5.toFixed(3),`${m.correct_abstentions}/${m.unanswerable}`].forEach(v=>tr.append(node('td',v)));
+   comparison.append(tr);
+   const failures=result.cases.filter(c=>!c.passed);
+   misses.append(node('div',`${method}: ${failures.length} cases missed · ${failures.map(f=>f.id).join(', ')||'none'}`));
+  }
+  el('qa-integrity').textContent=`${qa.question_count} held-out questions · ${qa.methods.lexical.metrics.answerable} answerable / ${qa.methods.lexical.metrics.unanswerable} unanswerable · ${qa.documents} reconstructed passages · dataset SHA-256 ${qa.dataset_sha256}. ${qa.limitations.join(' ')}`;
   const sources=clear('sources');for(const url of data.suites.financial.sources){try{const parsed=new URL(url);if(parsed.protocol!=='https:'||parsed.hostname!=='www.sec.gov')continue;const a=node('a',parsed.pathname.split('/').at(-1));a.href=parsed.href;a.target='_blank';a.rel='noopener noreferrer';a.className='source-link';sources.append(a);}catch{}}
   const limits=clear('limitations');for(const text of data.limitations)limits.append(node('li',text));
  }
