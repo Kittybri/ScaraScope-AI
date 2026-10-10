@@ -35,6 +35,10 @@
       add(output, 'h4', `${data.ticker} · ${data.form} · ${data.status.replaceAll('_', ' ')}`);
       add(output, 'p', data.answer, 'document-answer');
       add(output, 'p', `Source: ${data.data_kind === 'synthetic_demo' ? 'Fictional demonstration' : 'SEC EDGAR'} · Explanation: ${data.provider}`, 'muted');
+      if (data.provenance) {
+        const trace = data.provenance;
+        add(output, 'small', `Run ${trace.run_id} · ${trace.retrieval_strategy} retrieval ${trace.retrieval_ms} ms · total ${trace.total_ms} ms · model ${trace.model}`, 'muted');
+      }
       if (data.evidence.length) {
         add(output, 'h4', `Retrieved passages (${data.evidence.length})`);
         for (const passage of data.evidence) {

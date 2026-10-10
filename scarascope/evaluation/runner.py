@@ -17,18 +17,19 @@ from .financial_accuracy import run_financial_benchmark
 from .reliability import run_reliability_checks
 from .retrieval import evaluate_retrieval
 from .heldout.evaluator import compare_retrievers
+from ..ai.retrieval.semantic import EmbeddingEncoder, LocalSentenceEncoder
 
 DEFAULT_DIR = Path("data/benchmarks")
 MAX_HISTORY_BYTES = 2_000_000
 
 
-async def run_all() -> dict:
+async def run_all(*, encoder: EmbeddingEncoder | None = None) -> dict:
     financial = run_financial_benchmark()
     arithmetic = run_benchmark().model_dump()
     retrieval = evaluate_retrieval()
     reliability = await run_reliability_checks()
     groups = {"financial":financial,"arithmetic":arithmetic,"retrieval":retrieval,"reliability":reliability}
-    qa = compare_retrievers(split="heldout")
+    qa = compare_retrievers(split="heldout", encoder=encoder)
     baseline = qa["methods"]["lexical"]["metrics"]
     candidate = qa["methods"]["bm25"]["metrics"]
     gates = {"bm25_recall_at_3_not_below_lexical": candidate["recall_at_3"] >= baseline["recall_at_3"],
@@ -80,8 +81,11 @@ def main() -> None:
     parser.add_argument("--output",type=Path,help="Write JSON results to this local file (not committed automatically)")
     parser.add_argument("--no-save",action="store_true",help="Print results but don't create a results file")
     parser.add_argument("--fail-on-regression",action="store_true",help="Return nonzero if any evaluation fails")
+    parser.add_argument('--embedding-model-path', type=str, default='',
+                        help='Optional previously downloaded local sentence-transformer directory; no model auto-download.')
     args = parser.parse_args()
-    report = asyncio.run(run_all())
+    encoder = LocalSentenceEncoder(args.embedding_model_path) if args.embedding_model_path else None
+    report = asyncio.run(run_all(encoder=encoder))
     if not args.no_save:
         target = args.output or DEFAULT_DIR / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + ".json")
         save_report(report,target)

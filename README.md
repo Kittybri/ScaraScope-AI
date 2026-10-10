@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.5 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.6 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -54,6 +54,16 @@ ScaraScope now includes an offline, SEC-source-linked **question-held-out retrie
 - Sentence-level **numerical claim checks** against the *specific cited passage*, with conservative extractive fallback.
 - Reproducible comparison JSON, frozen gold metadata, regression gates, JUnit CI artifacts, and a separate **CodeQL security-analysis workflow**.
 - See [v0.5 methodology and caveats](docs/QA_BENCHMARKS.md) and the [six-minute interview demo](docs/DEMO.md).
+
+## New in v0.6: opt-in semantic retrieval, provenance, and operational evidence
+
+- **Local semantic and hybrid search:** opt-in, preinstalled sentence-transformers embeddings and BM25+semantic rank fusion. Lexical/BM25 remain the default, and missing models cause an explicit error instead of a hidden download. **Real embedding-quality improvements have not yet been measured.**
+- **Per-request document provenance:** run IDs, evidence passage hashes, accession identifiers, privacy policy, model and timing metadata without storing prompts or API keys.
+- **Additional adversarial and reliability tests**, including untrusted-source instruction screening, invalid embedding results, privacy checks and a safe, bounded localhost API performance probe.
+- **Dependency-audit and CycloneDX SBOM workflow** in addition to existing CI and CodeQL security checks.
+- See [Local Embeddings](docs/LOCAL_EMBEDDINGS.md), [Threat Model](docs/THREAT_MODEL.md), [Operations](docs/OPERATIONS.md), and [Remaining Roadmap](docs/ROADMAP.md).
+
+These changes are one verified development wave, **not** a finished full-filing QA corpus, proven hallucination elimination, real provider performance comparison or production deployment.
 
 ## Quick start
 
@@ -89,7 +99,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **69 passing tests** |
+| Full automated Python test suite | **87 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

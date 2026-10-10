@@ -1,0 +1,31 @@
+name: Dependency Audit and SBOM
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install application and audit tooling
+        run: python -m pip install -e '.[test]' 'pip-audit>=2.9,<3' 'cyclonedx-bom>=5,<8'
+      - name: Export actual installed dependency SBOM (CycloneDX JSON)
+        run: cyclonedx-py environment --output-format JSON --output-reproducible --output-file "$RUNNER_TEMP/scarascope-sbom.cdx.json"
+      - name: Audit installed dependencies against published advisories
+        run: python -m pip_audit --local --skip-editable --format json --output "$RUNNER_TEMP/dependency-audit.json"
+      - name: Attach SBOM and dependency audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scarascope-supply-chain
+          path: |
+            ${{ runner.temp }}/scarascope-sbom.cdx.json
+            ${{ runner.temp }}/dependency-audit.json
+          if-no-files-found: warn

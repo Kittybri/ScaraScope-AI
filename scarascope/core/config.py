@@ -27,6 +27,7 @@ class Settings:
     local_timeout: float = field(default_factory=lambda: _float_env("LOCAL_TIMEOUT_SECONDS", 25.0))
     cloud_timeout: float = field(default_factory=lambda: _float_env("CLOUD_TIMEOUT_SECONDS", 35.0))
     history_db_path: str = field(default_factory=lambda: os.getenv("HISTORY_DB_PATH", "./data/history.sqlite3"))
+    embedding_model_path: str = field(default_factory=lambda: os.getenv("SCARASCOPE_EMBEDDING_MODEL_PATH", "").strip())
     app_api_key: str = field(default_factory=lambda: os.getenv("SCARASCOPE_API_KEY", "").strip())
     require_auth: bool = field(default_factory=lambda: os.getenv("SCARASCOPE_REQUIRE_AUTH", "false").lower() in ("1", "true", "yes"))
     request_limit_per_minute: int = field(default_factory=lambda: min(240, max(10, int(os.getenv("SCARASCOPE_REQUESTS_PER_MINUTE", "60")))))

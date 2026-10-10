@@ -33,6 +33,8 @@
  }
  function renderHistory(data){const parent=clear('history');if(!data.items.length){parent.append(node('p','No saved runs yet. Use the benchmark CLI to save one.','muted'));return;}for(const item of data.items){const div=node('div',`${item.generated_at}: ${item.status} (${item.file})`);parent.append(div);}}
  function renderRuntime(data){const parent=clear('runtime');const counters=Object.entries(data.counters);if(!counters.length)parent.append(node('div','No live provider calls recorded yet.'));for(const [event,count]of counters)parent.append(node('div',`${event}: ${count}`));}
- async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime')]);renderReport(report);renderHistory(history);renderRuntime(runtime);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
+ async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime')]);
+   if(el('embed-eval').checked){report.qa_retrieval=await request('/api/engineering/retrieval-comparison?include_semantic=true');}
+   renderReport(report);renderHistory(history);renderRuntime(runtime);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
  el('run').addEventListener('click',refresh);el('suite').addEventListener('change',e=>renderCases(e.target.value));
 })();

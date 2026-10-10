@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import time
 from ..financial_accuracy import load_reference
+from ...ai.retrieval.semantic import EmbeddingEncoder, search_semantic
+from ...ai.retrieval.hybrid import search_hybrid
 from ...ai.retrieval import chunk_sections, search_passages, search_bm25
 from .dataset import load_questions, reference_sections, validate_gold
 from .metrics import score_ranking
 
 
-def compare_retrievers(*, split: str = 'heldout') -> dict:
+def compare_retrievers(*, split: str = 'heldout', encoder: EmbeddingEncoder | None = None) -> dict:
     if split not in {'dev', 'heldout'}:
         raise ValueError('Unknown QA split.')
     data, reference_hash = load_reference()
@@ -21,6 +23,9 @@ def compare_retrievers(*, split: str = 'heldout') -> dict:
     validate_gold(questions, documents)
     passages = chunk_sections(sections)
     methods = {'lexical':search_passages, 'bm25':search_bm25}
+    if encoder is not None:
+        methods['semantic'] = lambda docs, question, limit: search_semantic(docs, question, encoder, limit)
+        methods['hybrid'] = lambda docs, question, limit: search_hybrid(docs, question, encoder, limit)
     results = {}
     for method, retrieval in methods.items():
         rankings = []
@@ -45,6 +50,9 @@ def compare_retrievers(*, split: str = 'heldout') -> dict:
             'documents':len(passages), 'question_count':len(questions),
             'source_urls':sorted({doc['source_url'] for doc in documents.values()}),
             'methods':results,
+            'semantic_evaluated': encoder is not None,
+            'semantic_note':('Optional local model evaluated on the same reconstructed passages; no raw SEC or LLM scoring.'
+                             if encoder is not None else 'Not evaluated. Supply an installed local embedding model to measure semantic and hybrid retrieval.'),
             'limitations':[
                 'Question-held-out split over reference values already present in the project, not an external independent test corpus.',
                 'Document passages are reconstructed from SEC-source-linked statement figures, not downloaded filing paragraphs.',

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scarascope-ai"
-version = "0.5.0"
+version = "0.6.0"
 description = "A source-grounded financial research assistant with optional local/cloud LLM routing"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -21,6 +21,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2"]
 discord = ["discord.py>=2.4,<3"]
+semantic = ["sentence-transformers>=3.4,<6"]
 
 [tool.setuptools.packages.find]
 include = ["scarascope*"]

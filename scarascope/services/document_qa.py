@@ -7,10 +7,15 @@ from __future__ import annotations
 
 import json
 import re
+from time import perf_counter
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
-from ..ai.retrieval import EvidencePassage, chunk_sections, search_passages, search_bm25
+from ..ai.retrieval import (EvidencePassage, chunk_sections, search_passages, search_bm25,
+                            search_semantic, search_hybrid, LocalSentenceEncoder)
+from ..ai.retrieval.semantic import EmbeddingEncoder
+from .provenance import RunProvenance, fingerprint
+from ..security.untrusted_text import suspicious_source_instructions
 from ..ai.router import ModelRouter
 from ..verification.citations import check_answer_citations
 from ..verification.grounding import check_sentence_grounding
@@ -25,7 +30,7 @@ class DocumentQuestion(BaseModel):
     question: str = Field(min_length=6, max_length=700)
     form: Literal["10-K", "10-Q"] = "10-K"
     top_k: int = Field(default=4, ge=1, le=8)
-    retrieval_strategy: Literal["lexical", "bm25"] = "lexical"
+    retrieval_strategy: Literal["lexical", "bm25", "semantic", "hybrid"] = "lexical"
     provider: Literal["auto", "local", "cloud", "none"] = "auto"
     privacy: Literal["cloud_ok", "local_only"] = "cloud_ok"
 
@@ -56,6 +61,7 @@ class DocumentAnswer(BaseModel):
     evidence: list[CitedPassage] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     citation_format_validated: bool = False
+    provenance: RunProvenance | None = None
 
 
 _SYSTEM = """You are ScaraScope AI, a cautious SEC document analyst.
@@ -117,8 +123,11 @@ def _synthetic_sections(form: str):
 async def answer_document_question(
     request: DocumentQuestion, settings: Settings, *,
     sec_client: SECClient | None = None, filing_client: FilingClient | None = None,
-    router: ModelRouter | None = None,
+    router: ModelRouter | None = None, encoder: EmbeddingEncoder | None = None,
 ) -> DocumentAnswer:
+    started = perf_counter()
+    trace = RunProvenance(retrieval_strategy=request.retrieval_strategy, privacy_policy=request.privacy,
+                          form=request.form)
     if request.privacy == "local_only" and request.provider == "cloud":
         raise ValueError("Cloud provider conflicts with local-only privacy.")
     demo = request.ticker == "DEMO"
@@ -131,34 +140,56 @@ async def answer_document_question(
         filing = await (filing_client or FilingClient(settings.sec_user_agent)).research(
             cik, request.question, limit=request.top_k, form=request.form)
         warnings.extend(filing.warnings)
+    trace.accession = filing.accession
     if not filing.sections:
+        trace.total_ms = round((perf_counter() - started) * 1000, 3)
         return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                               data_kind="synthetic_demo" if demo else "sec_live", question=request.question,
                               answer="The filing text or supported sections could not be retrieved; no answer was generated.",
                               status="filing_unavailable", provider="none", filing_url=filing.filing_url,
-                              accession=filing.accession, warnings=warnings)
+                              accession=filing.accession, warnings=warnings, provenance=trace)
 
-    ranker = search_bm25 if request.retrieval_strategy == "bm25" else search_passages
-    candidates = ranker(chunk_sections(filing.sections), request.question, request.top_k)
+    retrieval_started = perf_counter()
+    passages = chunk_sections(filing.sections)
+    if request.retrieval_strategy in {"semantic", "hybrid"}:
+        # A local model is explicitly opt-in. No silent remote embedding call/download.
+        if encoder is None and not settings.embedding_model_path:
+            raise ValueError("Semantic/hybrid search requires SCARASCOPE_EMBEDDING_MODEL_PATH pointing to an installed local model.")
+        selected_encoder = encoder or LocalSentenceEncoder(settings.embedding_model_path)
+        ranker = search_semantic if request.retrieval_strategy == "semantic" else search_hybrid
+        candidates = ranker(passages, request.question, selected_encoder, request.top_k)
+        warnings.append("Embedding similarity is not factual evidence; compare against BM25 before trusting the ranking.")
+    else:
+        ranker = search_bm25 if request.retrieval_strategy == "bm25" else search_passages
+        candidates = ranker(passages, request.question, request.top_k)
+    trace.retrieval_ms = round((perf_counter() - retrieval_started) * 1000, 3)
+    trace.references = [fingerprint(passage) for passage in candidates]
     references = [CitedPassage(**passage.model_dump(), label=f"E{i}") for i, passage in enumerate(candidates, 1)]
     if not references:
+        trace.total_ms = round((perf_counter() - started) * 1000, 3)
         return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                               data_kind="synthetic_demo" if demo else "sec_live", question=request.question,
                               answer=_extractive([]), status="insufficient_evidence", provider="none",
                               evidence=[], filing_url=filing.filing_url, accession=filing.accession,
-                              warnings=warnings+["No retrieval match. A lack of matching passages does not prove the filing lacks the information."])
+                              warnings=warnings+["No retrieval match. A lack of matching passages does not prove the filing lacks the information."], provenance=trace)
     answer = _extractive(references)
     provider_name = "deterministic"
     status: Literal["synthesized", "extractive", "insufficient_evidence", "filing_unavailable"] = "extractive"
     citation_ok = True  # Extractive response is generated from references directly.
-    if not demo and request.provider != "none":
+    injection_suspected = suspicious_source_instructions(references)
+    if injection_suspected:
+        warnings.append("Possible instructions detected inside retrieved filing text; optional AI synthesis was skipped. Review source excerpts directly.")
+    if not demo and request.provider != "none" and not injection_suspected:
         llm_request = ResearchRequest(ticker=request.ticker, question=request.question,
                                       provider=request.provider, privacy=request.privacy)
+        generation_started = perf_counter()
         model_output = await (router or ModelRouter(settings)).explain(
             llm_request, _SYSTEM, _prompt(request.question, references, request.form), answer)
+        trace.generation_ms = round((perf_counter() - generation_started) * 1000, 3)
         if model_output.provider != "deterministic" and valid_citations(model_output.text, references):
             answer = model_output.text
             provider_name = model_output.provider
+            trace.model = model_output.model
             status = "synthesized"
         elif model_output.provider != "deterministic":
             warnings.append("The model returned missing, malformed or unknown evidence labels, or an ungrounded numeric claim. Replaced with verbatim source excerpts.")
@@ -166,9 +197,11 @@ async def answer_document_question(
             warnings.append("LLM synthesis unavailable. Returned retrieved evidence only.")
     warnings.append("Evidence labels and sentence-level numeric claims were checked; semantic truth of AI conclusions was not established.")
     warnings.append("Source URLs lead to the SEC filing, not guaranteed paragraph-level anchors; excerpt offsets refer to extracted text.") if not demo else None
+    trace.provider = provider_name
+    trace.total_ms = round((perf_counter() - started) * 1000, 3)
     return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                           data_kind="synthetic_demo" if demo else "sec_live", question=request.question,
                           answer=answer, status=status, provider=provider_name, evidence=references,
                           filing_url=filing.filing_url or (references[0].filing_url if references else None),
                           accession=filing.accession, warnings=warnings,
-                          citation_format_validated=citation_ok)
+                          citation_format_validated=citation_ok, provenance=trace)
