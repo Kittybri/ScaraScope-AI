@@ -5,6 +5,7 @@ import httpx
 from ...core.models import AnnualFinancials
 from .constants import SEC_FACTS_URL, SEC_TICKERS_URL
 from .extraction import extract_annual_financials
+from .fair_access import SEC_GATE
 
 
 class SECError(Exception):
@@ -16,12 +17,17 @@ class SECClient:
         self.user_agent = user_agent
 
     async def _get_json(self, client: httpx.AsyncClient, url: str) -> dict[str, Any]:
+        cached = SEC_GATE.get(url)
+        if cached is not None:
+            return cached
         try:
+            await SEC_GATE.wait()
             response = await client.get(url)
             response.raise_for_status()
             payload = response.json()
             if not isinstance(payload, dict):
                 raise SECError("Unexpected SEC response format.")
+            SEC_GATE.put(url,payload,86400 if "company_tickers" in url else 900)
             return payload
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
