@@ -16,6 +16,8 @@ from ..runner import save_report
 from .snapshots import make_snapshot, save_snapshot, load_snapshots
 from .annotations import Annotation, load_annotations
 from .scoring import compare_corpus
+from .baselines import compare_to_baseline, load_baseline
+from .review_audit import review_audit
 from ...data.sec.filings import FilingClient
 from ...ai.retrieval import chunk_sections
 from ...ai.retrieval.semantic import LocalSentenceEncoder
@@ -79,6 +81,10 @@ def main() -> None:
     ing.add_argument("--form",choices=["10-K","10-Q"],default="10-K")
     for p in (ing,sub.add_parser("inventory"),sub.add_parser("evaluate")):
         p.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
+    audit=sub.add_parser("audit",help="Summarize review completeness without publishing accuracy scores")
+    audit.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
+    audit.add_argument("--annotations",type=Path,required=True)
+    audit.add_argument("--output",type=Path)
     dra=sub.add_parser("draft",help="Create unreviewed question scaffolding; never auto-label gold evidence")
     dra.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
     dra.add_argument("--heldout-cik",action="append",required=True,help="CIK reserved for held-out evaluation")
@@ -90,6 +96,9 @@ def main() -> None:
     ev.add_argument("--split",choices=["dev","heldout"],default="heldout")
     ev.add_argument("--embedding-model-path",default="")
     ev.add_argument("--output",type=Path)
+    ev.add_argument("--require-second-review",action="store_true",help="Score only labels with two distinct reviewers and rationale")
+    ev.add_argument("--baseline",type=Path,help="Compare with pinned, identical benchmark report")
+    ev.add_argument("--fail-on-regression",action="store_true",help="Nonzero exit when any comparable retrieval metric decreases")
     args=parser.parse_args()
     if args.command=="ingest":
         try:
@@ -101,6 +110,14 @@ def main() -> None:
         print(json.dumps({"saved":[str(p) for p in files]},indent=2))
     elif args.command=="inventory":
         print(json.dumps(inventory(args.corpus,all_passages=args.all_passages),indent=2))
+    elif args.command=="audit":
+        snapshots=load_snapshots(args.corpus)
+        cases,digest=load_annotations(args.annotations)
+        report=review_audit(cases,snapshots)
+        report["annotation_sha256"]=digest
+        if args.output:
+            save_report(report,args.output)
+        print(json.dumps(report,indent=2))
     elif args.command=="draft":
         snapshots=load_snapshots(args.corpus)
         heldout={str(int(cik)).zfill(10) for cik in args.heldout_cik if re.fullmatch(r"\d{1,10}",cik)}
@@ -116,10 +133,17 @@ def main() -> None:
         snapshots=load_snapshots(args.corpus)
         cases,_=load_annotations(args.annotations)
         encoder=LocalSentenceEncoder(args.embedding_model_path) if args.embedding_model_path else None
-        report=compare_corpus(snapshots,cases,split=args.split,encoder=encoder)
+        report=compare_corpus(snapshots,cases,split=args.split,encoder=encoder,
+                              require_second_review=args.require_second_review)
+        if args.fail_on_regression and not args.baseline:
+            raise ValueError("--fail-on-regression requires --baseline.")
+        if args.baseline:
+            report["baseline_comparison"]=compare_to_baseline(report,load_baseline(args.baseline))
         if args.output:
             save_report(report,args.output)
         print(json.dumps(report,indent=2))
+        if args.fail_on_regression and report["baseline_comparison"]["status"]!="pass":
+            raise SystemExit(3)
         if report["status"]!="evaluated":
             raise SystemExit(2)  # Not a false green benchmark on unreviewed data.
 

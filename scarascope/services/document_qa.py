@@ -19,6 +19,7 @@ from ..security.untrusted_text import suspicious_source_instructions
 from ..ai.router import ModelRouter
 from ..verification.citations import check_answer_citations
 from ..verification.grounding import check_sentence_grounding
+from ..verification.numeric_context import check_cited_units
 from ..core.config import Settings
 from ..core.models import ResearchRequest
 from ..data.sec import SECClient
@@ -83,7 +84,8 @@ def _prompt(question: str, sources: list[CitedPassage], form: str) -> str:
 
 def valid_citations(answer: str, sources: list[CitedPassage]) -> bool:
     """Checks reference formatting only. It does not fact-check the model's prose."""
-    return not (check_answer_citations(answer, sources) or check_sentence_grounding(answer, sources))
+    return not (check_answer_citations(answer, sources) or check_sentence_grounding(answer, sources)
+                or check_cited_units(answer, sources))
 
 
 def _extractive(sources: list[CitedPassage]) -> str:

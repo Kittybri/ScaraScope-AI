@@ -83,3 +83,10 @@ Official historical filing examples for manual cross-checking:
 - [Microsoft FY2024 10-K](https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm)
 
 These are **historical references**, not filings the v0.7 CI downloaded or used to claim live accuracy.
+
+
+## v0.8 review-quality controls and baseline regression
+
+See [Independent Review and Regression Protocol](REVIEW_PROTOCOL.md). Operators can now run `python -m scarascope.evaluation.corpus.cli audit --annotations data/sec-corpus/questions.jsonl` for reviewer metadata and gap IDs. Add a **separate** `second_reviewer` and `second_review_notes` only after an actual independent review; software cannot verify that a real person performed it. `evaluate --require-second-review` excludes every case lacking that second review. `--baseline ... --fail-on-regression` rejects incompatible datasets or corpus hashes and exits nonzero if comparable retrieval metrics decline.
+
+The Engineering Lab can show real-corpus retrieval scores only when verified local snapshots and reviewed questions are present; otherwise it shows **not evaluated**. These safeguards do not create human-reviewed questions or measure LLM answer accuracy by themselves.

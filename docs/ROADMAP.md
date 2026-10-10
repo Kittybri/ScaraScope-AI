@@ -22,6 +22,15 @@ the test suite, GitHub Actions runs, and documented limitations.
 - [x] Bounded opt-in **live** Ollama/Groq smoke-test tool, without fabricated cost/accuracy metrics; not yet run on owner hardware.
 - [x] Corpus CLI smoke tests, security regression cases and architectural decision record.
 
+## Started/completed in v0.8
+
+- [x] Optional independent-second-review gating (reviewer identity is self-attested).
+- [x] Reviewer completeness audit with explicit missing rationale and second-review gaps.
+- [x] Reject incomparable corpus benchmark baselines and fail on verified retrieval regressions.
+- [x] Show real-corpus retrieval metrics separately in the Engineering Lab, with no synthetic fill-in.
+- [x] Additional explicitly-unit-bearing numerical claim checks for `$` and `%` in cited evidence.
+- [x] Expanded offline validation and adversarial benchmark regression tests.
+
 ## Evidence still needed before making hiring claims
 
 - [ ] Real SEC full-filing corpus with multiple independent human-reviewed

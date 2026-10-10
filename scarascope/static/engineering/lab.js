@@ -33,15 +33,36 @@
  }
  function renderCorpus(data){
   const parent=clear('corpus-status');
-  parent.append(node('p',`${data.snapshots} validated filing snapshots · ${data.annotations.reviewed??0} reviewed questions · ${data.annotations.unreviewed??0} awaiting review.`));
+  parent.append(node('p',`${data.snapshots} validated filing snapshots · ${data.annotations.reviewed??0} reviewed questions · ${data.annotations.second_reviewed??0} with second review · ${data.annotations.unreviewed??0} awaiting review.`));
   parent.append(node('p',data.note,'muted'));
   if(data.validation_error)parent.append(node('p',`Integrity validation failed: ${data.validation_error}`,'fail'));
   for(const src of data.sources)parent.append(node('small',`${src.cik} · ${src.form} · accession ${src.accession} · SHA ${src.digest.slice(0,12)}`));
  }
+ function renderRealCorpus(data){
+  const parent=clear('real-corpus-evaluation');
+  parent.append(node('p',`Real SEC corpus: ${data.status||'not_evaluated'} · ${data.review_policy||'one_reviewer'} review policy.`));
+  if(data.status!=='evaluated'){
+   parent.append(node('p',data.reason||'No complete reviewed answerable and unanswerable question set is available. No accuracy score can be reported.','muted'));
+   return;
+  }
+  parent.append(node('p',`${data.reviewed_in_split} scored questions; ${data.excluded_unreviewed} unreviewed excluded; ${data.excluded_lacking_second_review||0} lacking required second review.`));
+  parent.append(node('small',`Dataset SHA-256: ${data.dataset_sha256}`));
+  const table=document.createElement('table');
+  const h=document.createElement('tr');
+  ['Retriever','Recall@3','MRR@5','Correct abstentions','Failures'].forEach(label=>h.append(node('th',label)));
+  table.append(h);
+  for(const [name,result] of Object.entries(data.methods||{})){
+   const m=result.metrics,row=document.createElement('tr');
+   [name,`${(100*m.recall_at_3).toFixed(1)}%`,m.mrr_at_5.toFixed(3),`${m.correct_abstentions}/${m.unanswerable}`,result.cases.filter(c=>!c.passed).map(c=>c.id).join(', ')||'none'].forEach(value=>row.append(node('td',value)));
+   table.append(row);
+  }
+  parent.append(table);
+  parent.append(node('p','Retrieved evidence ranking only, not independent AI answer correctness. Reviewer aliases do not prove independent review.','fine'));
+ }
  function renderHistory(data){const parent=clear('history');if(!data.items.length){parent.append(node('p','No saved runs yet. Use the benchmark CLI to save one.','muted'));return;}for(const item of data.items){const div=node('div',`${item.generated_at}: ${item.status} (${item.file})`);parent.append(div);}}
  function renderRuntime(data){const parent=clear('runtime');const counters=Object.entries(data.counters);if(!counters.length)parent.append(node('div','No live provider calls recorded yet.'));for(const [event,count]of counters)parent.append(node('div',`${event}: ${count}`));}
- async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime,corpus]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime'),request('/api/engineering/corpus-status')]);
+ async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime,corpus,realCorpus]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime'),request('/api/engineering/corpus-status'),request('/api/engineering/corpus-evaluation?require_second_review='+String(el('require-second-review').checked))]);
    if(el('embed-eval').checked){report.qa_retrieval=await request('/api/engineering/retrieval-comparison?include_semantic=true');}
-   renderReport(report);renderHistory(history);renderRuntime(runtime);renderCorpus(corpus);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
+   renderReport(report);renderHistory(history);renderRuntime(runtime);renderCorpus(corpus);renderRealCorpus(realCorpus);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
  el('run').addEventListener('click',refresh);el('suite').addEventListener('change',e=>renderCases(e.target.value));
 })();

@@ -25,6 +25,8 @@ class Annotation(BaseModel):
     review_status: Literal["unreviewed", "reviewed"] = "unreviewed"
     reviewer: str | None = Field(default=None, max_length=80)
     reviewer_notes: str | None = Field(default=None, max_length=800)
+    second_reviewer: str | None = Field(default=None, max_length=80)
+    second_review_notes: str | None = Field(default=None, max_length=800)
 
     @model_validator(mode="after")
     def check_status(self):
@@ -35,6 +37,11 @@ class Annotation(BaseModel):
                 raise ValueError("Answerable reviewed cases need an answer and exact evidence IDs.")
             if not self.answerable and (self.gold_evidence_ids or self.gold_answer):
                 raise ValueError("Unanswerable reviewed cases cannot contain fabricated gold evidence.")
+        if self.second_reviewer or self.second_review_notes:
+            if self.review_status != "reviewed" or not self.second_reviewer or not self.second_review_notes:
+                raise ValueError("Second review requires a reviewed record, reviewer alias and rationale.")
+            if self.second_reviewer.strip().casefold() == (self.reviewer or "").strip().casefold():
+                raise ValueError("Second reviewer alias must differ from first reviewer.")
         return self
 
 
@@ -68,6 +75,7 @@ def validate_annotations(cases: list[Annotation], snapshots: list[FilingSnapshot
                 raise ValueError(f"Duplicate gold evidence in {case.id}.")
             if any(gid not in passages for gid in case.gold_evidence_ids):
                 raise ValueError(f"Question {case.id} references evidence missing from the pinned filing.")
-    return {"reviewed":sum(c.review_status == "reviewed" for c in cases),
+    return {"second_reviewed":sum(c.review_status == "reviewed" and c.second_reviewer is not None for c in cases),
+            "reviewed":sum(c.review_status == "reviewed" for c in cases),
             "unreviewed":sum(c.review_status != "reviewed" for c in cases),
             "dev_issuers":sorted(dev), "heldout_issuers":sorted(held)}

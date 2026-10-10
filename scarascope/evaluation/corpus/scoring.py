@@ -13,12 +13,14 @@ from .snapshots import FilingSnapshot
 
 
 def compare_corpus(snapshots: list[FilingSnapshot], cases: list[Annotation], *,
-                   split: str = "heldout", encoder: EmbeddingEncoder | None = None) -> dict:
+                   split: str = "heldout", encoder: EmbeddingEncoder | None = None,
+                   require_second_review: bool = False) -> dict:
     if split not in {"dev", "heldout"}:
         raise ValueError("Invalid corpus evaluation split.")
     integrity = validate_annotations(cases, snapshots)
     questions = [c for c in cases if c.split == split]
-    reviewed = [c for c in questions if c.review_status == "reviewed"]
+    reviewed = [c for c in questions if c.review_status == "reviewed"
+                and (not require_second_review or c.second_reviewer is not None)]
     snapshot_index = {(s.cik, s.accession): s for s in snapshots}
     dataset_hash = sha256(json.dumps([c.model_dump() for c in cases], sort_keys=True).encode()).hexdigest()
     manifest = {"benchmark":"real_sec_extracted_filing_passage_retrieval_v1", "split":split,
@@ -26,12 +28,15 @@ def compare_corpus(snapshots: list[FilingSnapshot], cases: list[Annotation], *,
                 "dataset_sha256":dataset_hash,
                 "snapshot_digests":{f"{s.cik}:{s.accession}":s.text_sha256 for s in snapshots},
                 "questions_in_split":len(questions), "reviewed_in_split":len(reviewed),
+                "review_policy":"two_reviewers" if require_second_review else "one_reviewer",
+                "excluded_lacking_second_review":sum(c.review_status == "reviewed" and not c.second_reviewer for c in questions) if require_second_review else 0,
                 "excluded_unreviewed":len(questions)-len(reviewed),"review":integrity,
                 "status":"not_evaluated", "methods":{},
                 "limitations":["Only exact passage retrieval and empty-result abstention are measured; not LLM answer accuracy.",
                                "Review labels are attributed to reviewer aliases; no independent double-review is guaranteed.",
                                "Extraction and chunking can omit or alter SEC HTML structure; offsets are in normalized extracted text.",
-                               "No unreviewed questions are included in accuracy denominators."]}
+                               "No unreviewed questions are included in accuracy denominators.",
+                               "Reviewer aliases do not independently establish reviewer identity or review quality."]}
     if not reviewed:
         return manifest
     answerable = sum(c.answerable for c in reviewed)

@@ -9,6 +9,7 @@ from .dependencies import get_settings
 from ..observability.metrics import snapshot
 from ..evaluation.corpus.snapshots import load_snapshots
 from ..evaluation.corpus.annotations import load_annotations, validate_annotations
+from ..evaluation.corpus.scoring import compare_corpus
 from ..evaluation.corpus.cli import DEFAULT_CORPUS
 
 router = APIRouter(prefix="/api/engineering", tags=["Engineering Lab"], dependencies=[Depends(require_api_key)])
@@ -50,7 +51,7 @@ async def corpus_status():
     try:
         snaps = load_snapshots(DEFAULT_CORPUS)
         file = DEFAULT_CORPUS / "questions.jsonl"
-        counts = {"reviewed": 0, "unreviewed": 0}
+        counts = {"reviewed": 0, "unreviewed": 0, "second_reviewed": 0}
         if file.is_file():
             labels, digest = load_annotations(file)
             counts = validate_annotations(labels, snaps)
@@ -63,3 +64,27 @@ async def corpus_status():
         return {"snapshots":0,"sources":[],"annotations":{},
                 "note":"Corpus validation failed; check the local snapshot and annotation files.",
                 "validation_error":type(exc).__name__}
+
+
+@router.get("/corpus-evaluation")
+async def corpus_evaluation(require_second_review: bool = False):
+    """Evaluate only reviewed, pinned local evidence; return no fabricated metrics.
+
+    Paths cannot be selected by HTTP users. The results contain IDs and metrics,
+    never raw source text, sensitive prompts, or arbitrary local file content.
+    """
+    file = DEFAULT_CORPUS / "questions.jsonl"
+    if not file.is_file():
+        return {"status":"not_evaluated","review_policy":
+                "two_reviewers" if require_second_review else "one_reviewer",
+                "methods":{}, "reason":"No local reviewed SEC question file is installed."}
+    try:
+        snapshots = load_snapshots(DEFAULT_CORPUS)
+        labels, annotation_digest = load_annotations(file)
+        report = compare_corpus(snapshots, labels, require_second_review=require_second_review)
+        report["annotation_file_sha256"] = annotation_digest
+        return report
+    except (ValueError, OSError):
+        return {"status":"not_evaluated", "methods":{},
+                "reason":"Local SEC evidence or annotation validation failed.",
+                "review_policy":"two_reviewers" if require_second_review else "one_reviewer"}

@@ -10,3 +10,9 @@
 6. **5:10–6:00, tradeoffs and next experiment.** Show how BM25 improves the small reference ranking task but does not fix all unanswerable questions. The next controlled experiment is a genuinely independent, full-filing SEC corpus with factual QA annotations and model-level verification.
 
 Before each demo: `python -m pytest -q`; `python -m scarascope.evaluation.runner --fail-on-regression`; confirm GitHub Actions is passing. Never publish API keys or personal credentials in screenshots.
+
+## v0.8 interview extension: show review integrity, not invented accuracy
+
+After showing the existing fixture benchmark, open `/engineering`, locate the **Real-filing evaluation readiness** area and enable **Require independent second review**. If local reviewed SEC data is absent, the system reports `not_evaluated` rather than promoting the reconstructed-table score to real SEC/LLM accuracy. Explain that the audit CLI lists unreviewed questions and missing reviewer rationales, while a pinned-baseline comparison refuses changed source hashes, question sets or denominators. See [REVIEW_PROTOCOL.md](REVIEW_PROTOCOL.md).
+
+For a strong live example once you have reviewed source data, run a real-corpus strict benchmark, save its JSON, and reproduce the baseline comparison. Be prepared to show question-level misses and clarify that exact-passage retrieval is not equivalent to verifying arbitrary AI-written prose. Never claim independent review was performed unless it actually was.
