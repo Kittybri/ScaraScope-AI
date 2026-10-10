@@ -1,6 +1,6 @@
 # ScaraScope AI
 
-**A source-grounded financial research assistant and hybrid LLM engineering portfolio project.** Built independently of Scaramouche and Wanderer, with a headless Python/FastAPI backend, browser dashboard, optional Discord client, and pluggable Ollama/Groq inference.
+**A source-grounded financial research assistant and hybrid LLM engineering portfolio project.** Built independently (not connected with my personal projects Scaramouche and Wanderer), with a headless Python/FastAPI backend, browser dashboard, optional Discord client, and pluggable Ollama/Groq inference.
 
 > **Status:** v0.1 prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not a full-text filing RAG system.
 
