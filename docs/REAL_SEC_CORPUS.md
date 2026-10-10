@@ -90,3 +90,16 @@ These are **historical references**, not filings the v0.7 CI downloaded or used 
 See [Independent Review and Regression Protocol](REVIEW_PROTOCOL.md). Operators can now run `python -m scarascope.evaluation.corpus.cli audit --annotations data/sec-corpus/questions.jsonl` for reviewer metadata and gap IDs. Add a **separate** `second_reviewer` and `second_review_notes` only after an actual independent review; software cannot verify that a real person performed it. `evaluate --require-second-review` excludes every case lacking that second review. `--baseline ... --fail-on-regression` rejects incompatible datasets or corpus hashes and exits nonzero if comparable retrieval metrics decline.
 
 The Engineering Lab can show real-corpus retrieval scores only when verified local snapshots and reviewed questions are present; otherwise it shows **not evaluated**. These safeguards do not create human-reviewed questions or measure LLM answer accuracy by themselves.
+
+## v0.10: repeatable historical-accession retrieval
+
+The previous CLI pulled the **latest** matching form, so collecting the same
+corpus weeks later could silently select different documents. The `ingest`
+command now accepts `--accession` when **exactly one** `--cik` is specified. It
+checks the official SEC submissions metadata before fetching the matching filing
+and never replaces a missing historical accession with the newest one. For
+specific historical Microsoft and Apple 10-K/10-Q examples, operator commands,
+security boundaries and limitations, see [ACCESSION_PINNING.md](ACCESSION_PINNING.md).
+
+Live retrieval and independent answer review remain pending; these changes do
+not imply successful live extraction or audited question-answer accuracy.

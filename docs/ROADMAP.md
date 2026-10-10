@@ -68,3 +68,19 @@ expense of correctness and auditability.
 body-size limiter. Public hosting needs a hardened reverse proxy with streaming
 limits, network egress allowlisting, private authentication, cross-worker quotas,
 and a reviewed incident/retention policy. These were not simulated as complete.
+
+## Implemented in v0.10: deterministic historical source selection
+
+- [x] Optional exact 10-K/10-Q accession selection in the document Q&A panel
+      and operator-run SEC corpus ingestion.
+- [x] Cross-check accession, CIK, form, SEC-listed primary document, and
+      historical archive index metadata **before** requesting a filing.
+- [x] Reject an absent accession rather than silently substituting the latest
+      document; bound historic-index requests and stream-limit filing size.
+- [x] Mocked SEC historic-index, malicious filename, mismatched form,
+      oversized HTML and pinned-snapshot regression cases.
+- [x] Published SEC historical source identifiers and reproduction commands.
+
+**Still not completed:** live SEC downloads, reproducible source-backed
+independently reviewed financial QA labels, live model comparisons, secure
+Oracle deployment, and authentic application screenshots.

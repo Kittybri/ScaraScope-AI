@@ -117,41 +117,68 @@ class FilingClient:
     def __init__(self, user_agent: str):
         self.user_agent = user_agent
 
-    async def research(self, cik: str, question: str, limit: int = 4, form: str = "10-K") -> FilingResearch:
+    async def research(self, cik: str, question: str, limit: int = 4, form: str = "10-K",
+                       accession: str | None = None) -> FilingResearch:
+        """Fetch newest or accession-pinned SEC filing, never a caller-supplied URL.
+
+        Pinned accessions must be present in the issuer's SEC submission manifest.
+        If the chosen accession is absent, do not silently fall back to latest.
+        """
+        from .submissions import choose_record, archive_index_names, ACCESSION_PATTERN
+
         if form not in {"10-K", "10-Q"}:
             raise SECError("Supported forms are 10-K and 10-Q.")
         if not self.user_agent or "@" not in self.user_agent or "example.com" in self.user_agent.lower():
             raise SECError("Set a real SEC_USER_AGENT with contact email for SEC filings.")
         if not re.fullmatch(r"\d{1,10}", cik):
             raise SECError("Invalid CIK.")
+        if accession is not None and not re.fullmatch(ACCESSION_PATTERN, accession):
+            raise SECError("Invalid accession number; expected 0000000000-00-000000.")
+        padded = cik.zfill(10)
         async with httpx.AsyncClient(timeout=20, follow_redirects=False, headers={
             "User-Agent": self.user_agent, "Accept": "application/json,text/html"}) as client:
             try:
                 await SEC_GATE.wait()
-                r = await client.get(SUBMISSIONS_URL.format(cik=cik.zfill(10)))
+                r = await client.get(SUBMISSIONS_URL.format(cik=padded))
                 r.raise_for_status()
-                payload = r.json()
-                recent = payload["filings"]["recent"]
-                forms = recent["form"]
-                ix = next(i for i, filing_form in enumerate(forms) if filing_form == form)
-                accession = str(recent["accessionNumber"][ix])
-                document = str(recent["primaryDocument"][ix])
-                filed = str(recent["filingDate"][ix])
-                if not re.fullmatch(r"[0-9]{10}-[0-9]{2}-[0-9]{6}", accession):
-                    raise SECError("SEC submission returned an unexpected accession number.")
-                if not re.fullmatch(r"[A-Za-z0-9_.-]{1,130}\.(?:htm|html|txt)", document, re.I):
-                    raise SECError("SEC submission returned an unsafe primary document path.")
-                url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{accession.replace('-', '')}/{document}"
+                if len(r.content) > MAX_HTML_BYTES:
+                    raise SECError("SEC submissions index exceeds the size cap.")
+                submissions = r.json()
+                record = choose_record(submissions["filings"]["recent"], form, accession)
+                if accession is not None and record is None:
+                    for filename in archive_index_names(submissions, padded):
+                        # Whitelisted SEC archive index name, never constructed from user input.
+                        await SEC_GATE.wait()
+                        archived = await client.get(f"https://data.sec.gov/submissions/{filename}")
+                        archived.raise_for_status()
+                        if len(archived.content) > MAX_HTML_BYTES:
+                            raise SECError("SEC historical submissions index exceeds the size cap.")
+                        record = choose_record(archived.json(), form, accession)
+                        if record is not None:
+                            break
+                if record is None:
+                    notice = ("Requested SEC filing accession is not listed for this CIK/form. No substitute filing was used."
+                              if accession else "No matching recent 10-K or 10-Q was found.")
+                    return FilingResearch(cik=padded, warnings=[notice])
+                url = record.url(padded)
+                # Stream instead of buffering an arbitrarily large SEC document in memory.
                 await SEC_GATE.wait()
-                resp = await client.get(url)
-                resp.raise_for_status()
-                if len(resp.content) > MAX_HTML_BYTES:
-                    raise SECError("SEC filing exceeds the configured document size limit.")
-                sections = extract_sections(resp.text, url, accession, filed, form=form)
-                result = FilingResearch(cik=cik.zfill(10), accession=accession, filing_url=url, sections=sections,
+                content = bytearray()
+                async with client.stream("GET", url) as response:
+                    response.raise_for_status()
+                    async for part in response.aiter_bytes():
+                        content.extend(part)
+                        if len(content) > MAX_HTML_BYTES:
+                            raise SECError("SEC filing exceeds the configured document size limit.")
+                # SEC primary documents may contain legacy encodings. Replacement is explicit.
+                html = content.decode("utf-8", errors="replace")
+                sections = extract_sections(html, url, record.accession, record.filed, form=form)
+                result = FilingResearch(cik=padded, accession=record.accession,
+                                        filing_url=url, sections=sections,
                                         evidence=retrieve_evidence(sections, question, limit))
                 if not sections:
-                    result.warnings.append("Could not locate supported filing sections. Source formatting varies; no narrative claims were generated.")
+                    result.warnings.append("Could not locate supported filing sections; extraction is best-effort.")
                 return result
-            except (httpx.HTTPError, KeyError, TypeError, ValueError, StopIteration) as exc:
-                return FilingResearch(cik=cik.zfill(10), warnings=["SEC filing text is temporarily unavailable or no recent filing of the requested form was found."])
+            except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+                return FilingResearch(cik=padded, warnings=[
+                    "SEC filing text or submissions metadata is temporarily unavailable; no alternate filing was substituted."])

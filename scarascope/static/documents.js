@@ -21,6 +21,8 @@
       top_k: 5, retrieval_strategy: $('document-retrieval').value,
       provider: $('provider').value, privacy: $('privacy').value,
     };
+    const accession = $('document-accession').value.trim();
+    if (accession) body.accession = accession;
     output.replaceChildren();
     add(output, 'p', 'Searching filing excerpts…');
     $('document-submit').disabled = true;

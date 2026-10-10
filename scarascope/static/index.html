@@ -103,6 +103,8 @@
           <form id="document-form" class="compact-form">
             <label for="document-form-type">Filing type</label>
             <select id="document-form-type"><option value="10-K">10-K (annual)</option><option value="10-Q">10-Q (quarterly)</option></select>
+            <label for="document-accession">Exact SEC accession (optional, for historical filings)</label>
+            <input id="document-accession" type="text" maxlength="20" placeholder="e.g., 0000950170-24-087843" autocomplete="off" spellcheck="false">
             <label for="document-retrieval">Evidence ranking</label>
             <select id="document-retrieval"><option value="lexical">Lexical baseline</option><option value="bm25">BM25 (experimental)</option><option value="semantic">Semantic (local model required)</option><option value="hybrid">Hybrid (local model required)</option></select>
             <label for="document-question">Document question</label>

@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.9 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.10 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -176,6 +176,16 @@ Additional tests exercise Unicode-obfuscated instruction injection, unsupported 
 
 See [Operations and Trace Limits](docs/OPERATIONS.md), [Threat Model](docs/THREAT_MODEL.md) and [Engineering Roadmap](docs/ROADMAP.md). The offline regression tests do **not** establish live SEC answer accuracy or semantic verification.
 
+## New in v0.10: exact historical SEC filing research
+
+ScaraScope now lets you **pin document Q&A and SEC corpus ingestion to a specific historical 10-K/10-Q accession**, rather than silently switching to the issuer's newest filing. The pipeline confirms the accession and form in SEC submissions metadata, validates historical index filenames, constructs only canonical SEC filing URLs, disallows redirects, and stream-limits document size. The browser's *Ask a filing* tool has an optional **Exact SEC accession** input. Leave it blank for the latest available filing.
+
+- [Historical accession guide](docs/ACCESSION_PINNING.md): pinned Microsoft FY2024 and Apple FY2023/quarterly official SEC filing examples and operator instructions.
+- [SEC corpus review process](docs/REAL_SEC_CORPUS.md): snapshot integrity, independent review requirements, and gated retrieval benchmarking.
+- **138 automated regression tests** passed locally, including mocked historical-index selection, wrong-form handling, malicious filenames, redirect rejection, and no substitution when an accession is absent.
+
+**Evidence boundary:** Official SEC source identifiers were checked, but the app's real-document download and extraction have **not** been tested against live SEC servers in this environment. No independently human-reviewed real-corpus retrieval or LLM accuracy score is claimed.
+
 ## Quick start
 
 Run a **fully offline fictional demo**, with no API keys or Oracle account required.
@@ -210,7 +220,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **124 passing tests** |
+| Full automated Python test suite | **138 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

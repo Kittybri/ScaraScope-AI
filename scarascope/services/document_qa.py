@@ -32,6 +32,7 @@ class DocumentQuestion(BaseModel):
     ticker: str = Field(min_length=1, max_length=12)
     question: str = Field(min_length=6, max_length=700)
     form: Literal["10-K", "10-Q"] = "10-K"
+    accession: str | None = Field(default=None, pattern=r"^\d{10}-\d{2}-\d{6}$")
     top_k: int = Field(default=4, ge=1, le=8)
     retrieval_strategy: Literal["lexical", "bm25", "semantic", "hybrid"] = "lexical"
     provider: Literal["auto", "local", "cloud", "none"] = "auto"
@@ -137,6 +138,8 @@ async def answer_document_question(
     if request.privacy == "local_only" and request.provider == "cloud":
         raise ValueError("Cloud provider conflicts with local-only privacy.")
     demo = request.ticker == "DEMO"
+    if demo and request.accession:
+        raise ValueError("FICTIONAL-DEMO cannot use a real SEC accession.")
     warnings = ["Source and financial narrative are fictional; no real SEC filing was consulted."] if demo else []
     company = "ScaraScope Example Corporation (fictional)" if demo else ""
     if demo:
@@ -144,7 +147,8 @@ async def answer_document_question(
     else:
         company, cik = await (sec_client or SECClient(settings.sec_user_agent)).resolve_ticker(request.ticker)
         filing = await (filing_client or FilingClient(settings.sec_user_agent)).research(
-            cik, request.question, limit=request.top_k, form=request.form)
+            cik, request.question, limit=request.top_k, form=request.form,
+            **({"accession": request.accession} if request.accession else {}))
         warnings.extend(filing.warnings)
     trace.accession = filing.accession
     if not filing.sections:

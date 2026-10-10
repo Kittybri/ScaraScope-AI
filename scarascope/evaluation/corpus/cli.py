@@ -25,7 +25,10 @@ from ...ai.retrieval.semantic import LocalSentenceEncoder
 DEFAULT_CORPUS = Path("data/sec-corpus")
 
 
-async def ingest(ciks: list[str], form: str, output: Path, user_agent: str) -> list[Path]:
+async def ingest(ciks: list[str], form: str, output: Path, user_agent: str,
+                 accession: str | None = None) -> list[Path]:
+    if accession is not None and len(ciks) != 1:
+        raise ValueError("--accession requires exactly one --cik to prevent misattribution.")
     if len(ciks)>8 or len(ciks)!=len(set(ciks)) or not ciks:
         raise ValueError("Select 1–8 distinct company CIKs per ingestion command.")
     if not user_agent or "@" not in user_agent or "example.com" in user_agent.lower():
@@ -35,7 +38,8 @@ async def ingest(ciks: list[str], form: str, output: Path, user_agent: str) -> l
     for cik in ciks:
         if not re.fullmatch(r"\d{1,10}",cik):
             raise ValueError("Invalid CIK; use decimal digits only.")
-        filing = await client.research(cik, "risk operations revenue cybersecurity", form=form)
+        filing = await client.research(cik, "risk operations revenue cybersecurity", form=form,
+                                       **({"accession": accession} if accession else {}))
         snapshot = make_snapshot(filing, form)
         target = output / f"{snapshot.cik}_{snapshot.accession}_{snapshot.form}.json"
         paths.append(save_snapshot(snapshot,target))
@@ -79,6 +83,7 @@ def main() -> None:
     ing=sub.add_parser("ingest",help="Download recent 10-K or 10-Q and freeze extracted sections")
     ing.add_argument("--cik",action="append",required=True,help="CIK; repeat up to eight times")
     ing.add_argument("--form",choices=["10-K","10-Q"],default="10-K")
+    ing.add_argument("--accession",help="Optional exact historical SEC accession; must belong to the CIK and filing form")
     for p in (ing,sub.add_parser("inventory"),sub.add_parser("evaluate")):
         p.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
     audit=sub.add_parser("audit",help="Summarize review completeness without publishing accuracy scores")
@@ -106,7 +111,8 @@ def main() -> None:
             load_dotenv()
         except ImportError:
             pass
-        files=asyncio.run(ingest(args.cik,args.form,args.corpus,os.getenv("SEC_USER_AGENT","")))
+        files=asyncio.run(ingest(args.cik,args.form,args.corpus,os.getenv("SEC_USER_AGENT",""),
+                                 accession=args.accession))
         print(json.dumps({"saved":[str(p) for p in files]},indent=2))
     elif args.command=="inventory":
         print(json.dumps(inventory(args.corpus,all_passages=args.all_passages),indent=2))
