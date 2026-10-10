@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d2036">
+  <title>ScaraScope AI | Financial Intelligence</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell nav-inner">
+      <a class="brand" href="/" aria-label="ScaraScope AI home"><span class="brand-icon">S<span>.</span></span><span>ScaraScope <strong>AI</strong></span></a>
+      <div class="nav-right"><span class="env-chip"><span class="pulse"></span><span id="health-label">Checking API</span></span><a class="docs-link" href="/docs" target="_blank" rel="noopener">API Docs ↗</a><a class="docs-link gh" href="https://github.com/Kittybri/ScaraScope-AI" target="_blank" rel="noopener">GitHub ↗</a></div>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="line"></span> FINANCIAL RESEARCH, ENGINEERED FOR CLARITY</div>
+      <h1>Deeper insight.<br><em>Better evidence.</em></h1>
+      <p class="intro">Analyze public-company financial statements, explore reported metrics, and generate explainable research. Powered by verifiable SEC data and optional hybrid AI.</p>
+      <div class="hero-stats"><div><strong>SEC EDGAR</strong><span>Source-grounded</span></div><div><strong>Ollama + Groq</strong><span>Optional hybrid routing</span></div><div><strong>Python</strong><span>Calculated, not guessed</span></div></div>
+    </section>
+    <div class="main-grid">
+      <section class="panel query-panel" aria-labelledby="research-title">
+        <div class="panel-label">01 / RESEARCH WORKSPACE</div>
+        <h2 id="research-title">Company intelligence</h2>
+        <p class="muted">Start with the fictional demo or enter a US-listed ticker for live SEC XBRL facts.</p>
+        <form id="research-form">
+          <label for="ticker">Company ticker</label>
+          <div class="ticker-row"><input id="ticker" name="ticker" maxlength="12" required value="DEMO" autocomplete="off" spellcheck="false" placeholder="e.g., MSFT"><button type="button" id="sample-btn" class="secondary">Use demo</button></div>
+          <label for="question">Research question</label>
+          <textarea id="question" rows="3" maxlength="700">Summarize revenue growth, profitability, and changes in financial performance.</textarea>
+          <div class="form-row"><div><label for="years">Annual periods</label><select id="years"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div><div><label for="provider">LLM preference</label><select id="provider"><option value="auto">Auto routing</option><option value="local">Prefer Ollama</option><option value="cloud">Prefer Groq</option><option value="none">No AI (verified rules)</option></select></div></div>
+          <div class="form-row"><div><label for="privacy">Data routing policy</label><select id="privacy"><option value="cloud_ok">Cloud eligible</option><option value="local_only">Local-only</option></select></div><div><label for="api-key">Private API key (if set)</label><input id="api-key" type="password" autocomplete="off" placeholder="Optional"></div></div>
+          <button type="submit" class="primary" id="submit-btn"><span>Run financial analysis</span><span aria-hidden="true">→</span></button>
+          <p class="micro">Live SEC lookup requires <code>SEC_USER_AGENT</code> in your local <code>.env</code>. Demo uses fictional figures and never contacts the SEC or an LLM.</p>
+        </form>
+      </section>
+      <aside class="right-column">
+        <section class="panel system-panel"><div class="panel-label">02 / SYSTEM STATUS</div><h2>Inference architecture</h2><div class="status-line"><span>API server</span><strong id="api-state">Checking…</strong></div><div class="status-line"><span>SEC contact configured</span><strong id="sec-state">—</strong></div><div class="status-line"><span>Ollama enabled</span><strong id="ollama-state">—</strong></div><div class="status-line"><span>Groq configured</span><strong id="groq-state">—</strong></div><div class="system-note">The core financial calculations run independently of language models. Inference providers are optional.</div></section>
+        <section class="panel explain-panel"><div class="panel-label">ENGINEERING PRINCIPLE</div><h3>Evidence first.<br>Language second.</h3><p>SEC data → validated periods → Python calculations → optional AI explanation → traceable sources.</p><div class="pipeline"><span>EDGAR</span><span>→</span><span>PYTHON</span><span>→</span><span>LLM</span></div></section>
+      </aside>
+    </div>
+    <section id="result-panel" class="panel result-panel" hidden aria-live="polite">
+      <div class="result-head"><div><div class="panel-label">03 / ANALYSIS OUTPUT</div><h2 id="company-title">Research report</h2><p id="result-meta" class="muted"></p></div><div id="result-tag" class="result-tag"></div></div>
+      <div id="warning-banner" class="warning-banner" hidden></div>
+      <div id="kpis" class="kpi-grid"></div>
+      <div class="output-grid"><div class="data-section"><h3>Annual revenue</h3><div id="chart" class="chart" role="img" aria-label="Revenue by annual reporting period"></div></div><div class="data-section"><h3>Research interpretation</h3><p id="summary" class="summary-text"></p><div id="model-info" class="model-info"></div></div></div>
+      <h3 class="table-heading">Reported financial data</h3><div class="table-overflow"><table><thead><tr><th>Period end</th><th>Revenue</th><th>Operating income</th><th>Net income</th><th>Revenue growth</th><th>Op. margin</th></tr></thead><tbody id="finance-body"></tbody></table></div>
+      <h3 class="table-heading">Original source filings</h3><div id="sources" class="source-grid"></div>
+      <p class="disclaimer">ScaraScope is a research prototype, not an investment adviser. Financial facts may vary by accounting tags and fiscal period. Verify important numbers against the original filings. The synthetic demo does not represent a real company.</p>
+    </section>
+    <div id="error-panel" class="error-panel" role="alert" hidden></div>
+  </main>
+  <footer class="footer shell"><div><strong>ScaraScope AI</strong> · Portfolio engineering project</div><div>Built with Python, FastAPI, SEC EDGAR, Ollama &amp; Groq</div></footer>
+</body>
+</html>
