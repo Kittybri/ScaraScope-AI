@@ -1,5 +1,9 @@
 # Evaluation methodology
 
+**Version 0.4 update:** See [BENCHMARKS.md](BENCHMARKS.md) for the new, source-linked historical financial fixture dataset (34 cases), synthetic retrieval and provider reliability suites, benchmark CLI/JSON artifacts and `/engineering` dashboard. These are independent offline test scores, not LLM correctness metrics.
+
+# Evaluation methodology
+
 `python -m scarascope.evaluation.benchmark` evaluates a **small deterministic golden suite**.
 It checks six arithmetic/edge cases including division by zero, negative income,
 revenue growth and a DCF perpetuity. It is a smoke test, not evidence that a

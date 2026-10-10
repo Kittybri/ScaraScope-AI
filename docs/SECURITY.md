@@ -26,3 +26,13 @@
 - A failure of optional SEC filing-text retrieval does not discard structured financial results.
 - Provider diagnostics check reachability, not semantic quality or prompt completion.
 - Prompts cannot trigger arbitrary external actions; proposed trading and account access integrations require separate reviews.
+
+
+## Engineering Lab safeguards (v0.4)
+
+- `GET /api/engineering/*` shares the API-key requirement of protected routes; the standalone HTML page contains no embedded credentials.
+- The benchmark is completely offline; provider failures are simulated in injected stubs and **never** send research text to Groq.
+- The CLI stores only the fixed test dataset outcomes, dataset checksum, Python version and optional short Git commit; no user prompts or provider keys.
+- The history endpoint reads only bounded local `*.json` files within the configured code directory, ignores symlinks/oversized records, and never accepts a user-controlled filesystem path.
+- Source URL checks validate SEC HTTPS hosts and accessions, but do not guarantee the linked statements support an LLM's qualitative paraphrase.
+- The numeric claim check is deliberately conservative and can reject legitimate calculated numbers that are not written in retrieved excerpts.

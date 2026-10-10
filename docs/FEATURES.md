@@ -69,3 +69,15 @@ a commercial market-data feed, or a production-ready multi-tenant service.
 These features **do not** implement embeddings, vector search, a full SEC
 filing corpus index, perfect HTML section extraction, paragraph deep links,
 independent semantic validation, or autonomous trading advice.
+
+
+## v0.4 Engineering Lab
+
+- Source-linked historical SEC 10-K financial reference dataset; 34 fixed numerical cases and a reproducible SHA-256 fingerprint.
+- Six deterministic math tests, five fictional retrieval tests and six simulated provider-failure/privacy tests.
+- Read-only Engineering Lab with suite-separated results, source links, per-case audit and local CLI result history.
+- Structured financial claim, SEC source, period alignment and restricted numeric citation checks.
+- CI JSON benchmark artifact; no API keys needed.
+- Not implemented: live-provider pricing benchmark, held-out financial LLM QA score, semantic claim verification.
+
+See [BENCHMARKS.md](BENCHMARKS.md).

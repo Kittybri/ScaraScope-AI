@@ -2,7 +2,27 @@
 
 **A source-grounded financial research assistant and hybrid LLM engineering portfolio project.** Built independently (not connected with my personal projects Scaramouche and Wanderer), with a headless Python/FastAPI backend, browser dashboard, optional Discord client, and pluggable Ollama/Groq inference.
 
-> **Status:** v0.3 modular prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not an exhaustively indexed filing corpus.
+> **Status:** v0.4 modular prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not an exhaustively indexed filing corpus.
+
+
+## New in v0.4: Engineering Lab and auditable offline benchmarks
+
+- **Engineering Lab at `/engineering`** (once running locally at `http://127.0.0.1:8000/engineering`): a separate, responsive engineering dashboard, backed by actual on-demand test outcomes rather than invented statistics.
+- **34 historical SEC-source-linked financial benchmark cases**, using fixed figures from Apple's FY2023 and Microsoft's FY2024 10-K filings; expected answers are recorded in a versioned dataset and compared to Python calculations. **Not** a live SEC XBRL extraction or LLM reasoning benchmark.
+- **6 arithmetic / 5 synthetic lexical retrieval / 6 simulated provider reliability cases** with independent denominators and explicit limitations.
+- **New `verification/` package** for structured financial claims, reporting-period alignment, SEC source metadata and document citation-label/numeric-claim checks. These do **not** establish unrestricted LLM semantic accuracy.
+- **Reproducible JSON reports** and a CLI runner, local report history, GitHub Actions benchmark artifacts, and tests of intentional erroneous values, citations, source URLs, dates and privacy failures.
+- **Provider evaluation isolation:** fake benchmark outages do not inflate the application’s real inference counters.
+
+Try it without API keys:
+
+```bash
+python -m scarascope.evaluation.runner --fail-on-regression
+uvicorn scarascope.api:app --reload
+# Then visit http://127.0.0.1:8000/engineering
+```
+
+Read the [Benchmarks and Evidence Guide](docs/BENCHMARKS.md) and [Engineering Case Study](docs/ENGINEERING_CASE_STUDY.md). Scores from fixed fixtures are never presented as real-world AI answering accuracy.
 
 
 ## New in v0.2: modular financial research toolkit
@@ -142,7 +162,7 @@ The result has `answer`, `status`, `provider`, `evidence` (E1/E2 source labels,
 SEC accession, URL, section title and normalized text offset), and limitations.
 If no passage matches, it abstains instead of inventing a filing statement.
 If an LLM supplies unknown or missing reference labels, the answer is replaced
-with source excerpts. **Reference checks do not validate the factual accuracy of
+with source excerpts. **Reference checks reject unknown labels and explicit numeric claims missing from the evidence, but do not establish the semantic accuracy of
 LLM-written prose.** SEC URLs open the filing, not guaranteed precise paragraph
 anchors. Section extraction can fail for unusual SEC HTML, and lexical matching
 can miss synonyms. Large or PDF-only filings may remain unsupported.

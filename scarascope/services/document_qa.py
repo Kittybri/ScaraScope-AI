@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 from ..ai.retrieval import EvidencePassage, chunk_sections, search_passages
 from ..ai.router import ModelRouter
+from ..verification.citations import check_answer_citations
 from ..core.config import Settings
 from ..core.models import ResearchRequest
 from ..data.sec import SECClient
@@ -74,11 +75,7 @@ def _prompt(question: str, sources: list[CitedPassage], form: str) -> str:
 
 def valid_citations(answer: str, sources: list[CitedPassage]) -> bool:
     """Checks reference formatting only. It does not fact-check the model's prose."""
-    seen = set(re.findall(r"\[E\d+\]", answer))
-    # Reject malformed bracketed E-citations in addition to unknown well-formed ones.
-    brackets = re.findall(r"\[E[^\]\n]*\]", answer)
-    accepted = {f"[{passage.label}]" for passage in sources}
-    return bool(seen) and bool(brackets) and set(brackets) == seen and seen.issubset(accepted)
+    return not check_answer_citations(answer, sources)
 
 
 def _extractive(sources: list[CitedPassage]) -> str:
@@ -161,10 +158,10 @@ async def answer_document_question(
             provider_name = model_output.provider
             status = "synthesized"
         elif model_output.provider != "deterministic":
-            warnings.append("The model returned missing, malformed or unknown evidence labels. Replaced with verbatim source excerpts.")
+            warnings.append("The model returned missing, malformed or unknown evidence labels, or an ungrounded numeric claim. Replaced with verbatim source excerpts.")
         elif model_output.note:
             warnings.append("LLM synthesis unavailable. Returned retrieved evidence only.")
-    warnings.append("Evidence labels were checked for validity, not independently checked for the truth of AI-generated conclusions.")
+    warnings.append("Evidence labels and explicit copied numbers were checked; semantic truth of AI conclusions was not established.")
     warnings.append("Source URLs lead to the SEC filing, not guaranteed paragraph-level anchors; excerpt offsets refer to extracted text.") if not demo else None
     return DocumentAnswer(ticker=request.ticker, company=company, form=request.form,
                           data_kind="synthetic_demo" if demo else "sec_live", question=request.question,

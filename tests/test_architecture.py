@@ -24,7 +24,7 @@ def _imports(path: Path) -> set[str]:
 
 def test_core_is_independent_of_external_interfaces():
     """Financial math, SEC parsing, AI providers, and services must not import UI frameworks."""
-    for directory in ("core", "finance", "data", "ai", "services", "storage"):
+    for directory in ("core", "finance", "data", "ai", "services", "storage", "verification", "evaluation"):
         for path in (ROOT / directory).rglob("*.py"):
             disallowed = _imports(path).intersection({"discord", "fastapi"})
             assert not disallowed, f"{path.relative_to(ROOT)} imports UI framework(s): {disallowed}"

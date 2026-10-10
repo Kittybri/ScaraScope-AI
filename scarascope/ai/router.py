@@ -16,10 +16,15 @@ def is_complex(question: str, years: int) -> bool:
 
 
 class ModelRouter:
-    def __init__(self, settings: Settings, local: LLMProvider | None = None, cloud: LLMProvider | None = None):
+    def __init__(self, settings: Settings, local: LLMProvider | None = None, cloud: LLMProvider | None = None, *, record_metrics: bool = True):
         self.settings = settings
+        self.record_metrics = record_metrics
         self.local = local or OllamaProvider(settings)
         self.cloud = cloud or GroqProvider(settings)
+
+    def _record(self, event: str, **kwargs) -> None:
+        if self.record_metrics:
+            record(event, **kwargs)
 
     async def explain(self, request: ResearchRequest, system: str, prompt: str, fallback_text: str) -> LLMResult:
         if request.provider == "none":
@@ -45,13 +50,13 @@ class ModelRouter:
                 provider = self.local if name == "local" else self.cloud
                 start=perf_counter()
                 text = await provider.generate(system, prompt)
-                record("llm_success",provider=name,milliseconds=(perf_counter()-start)*1000)
-                if name != first_choice: record("provider_fallback",provider=name)
+                self._record("llm_success",provider=name,milliseconds=(perf_counter()-start)*1000)
+                if name != first_choice: self._record("provider_fallback",provider=name)
                 return LLMResult(provider="ollama" if name == "local" else "groq", model=self.settings.ollama_model if name == "local" else self.settings.groq_model, text=text, fallback_used=name != first_choice, note="; ".join(attempts) or None)
             except ProviderError as exc:
-                record("llm_provider_failure",provider=name)
+                self._record("llm_provider_failure",provider=name)
                 attempts.append(f"{name}: {exc}")
-        record("deterministic_fallback")
+        self._record("deterministic_fallback")
         reason = "; ".join(attempts) or "No usable LLM provider is configured."
         if request.privacy == "local_only":
             reason += " Cloud fallback was disabled by privacy policy."

@@ -1,0 +1,356 @@
+{
+  "dataset": "sec-10k-historical-reference-v1",
+  "version": 1,
+  "provenance": "Numbers transcribed from the consolidated statements of operations/income in the two linked SEC filings; expected derived ratios precomputed from the stated numbers. This does not re-download filings or independently certify the SEC XBRL ingestion at runtime.",
+  "units": "USD millions (unless a case is labeled percent)",
+  "companies": [
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "cik": "0000789019",
+      "source": {
+        "form": "10-K",
+        "accession": "0000950170-24-087843",
+        "filed": "2024-07-30",
+        "url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+        "table": "Consolidated Statements of Income, fiscal years 2024, 2023 and 2022"
+      },
+      "rows": [
+        {
+          "fiscal_year": 2024,
+          "period_end": "2024-06-30",
+          "revenue": 245122,
+          "operating_income": 109433,
+          "net_income": 88136
+        },
+        {
+          "fiscal_year": 2023,
+          "period_end": "2023-06-30",
+          "revenue": 211915,
+          "operating_income": 88523,
+          "net_income": 72361
+        },
+        {
+          "fiscal_year": 2022,
+          "period_end": "2022-06-30",
+          "revenue": 198270,
+          "operating_income": 83383,
+          "net_income": 72738
+        }
+      ]
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "cik": "0000320193",
+      "source": {
+        "form": "10-K",
+        "accession": "0000320193-23-000106",
+        "filed": "2023-11-02",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm",
+        "table": "Consolidated Statements of Operations, fiscal years 2023, 2022 and 2021"
+      },
+      "rows": [
+        {
+          "fiscal_year": 2023,
+          "period_end": "2023-09-30",
+          "revenue": 383285,
+          "operating_income": 114301,
+          "net_income": 96995
+        },
+        {
+          "fiscal_year": 2022,
+          "period_end": "2022-09-24",
+          "revenue": 394328,
+          "operating_income": 119437,
+          "net_income": 99803
+        },
+        {
+          "fiscal_year": 2021,
+          "period_end": "2021-09-25",
+          "revenue": 365817,
+          "operating_income": 108949,
+          "net_income": 94680
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "MSFT-2024-revenue",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "revenue",
+      "expected": 245122,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2024-operating_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "operating_income",
+      "expected": 109433,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2024-net_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "net_income",
+      "expected": 88136,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2024-operating_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "operating_margin_pct",
+      "expected": 44.64,
+      "unit": "percent"
+    },
+    {
+      "id": "MSFT-2024-net_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "net_margin_pct",
+      "expected": 35.96,
+      "unit": "percent"
+    },
+    {
+      "id": "MSFT-2024-revenue_growth_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2024,
+      "metric": "revenue_growth_pct",
+      "expected": 15.67,
+      "unit": "percent",
+      "base_fiscal_year": 2023
+    },
+    {
+      "id": "MSFT-2023-revenue",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "revenue",
+      "expected": 211915,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2023-operating_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "operating_income",
+      "expected": 88523,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2023-net_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "net_income",
+      "expected": 72361,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2023-operating_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "operating_margin_pct",
+      "expected": 41.77,
+      "unit": "percent"
+    },
+    {
+      "id": "MSFT-2023-net_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "net_margin_pct",
+      "expected": 34.15,
+      "unit": "percent"
+    },
+    {
+      "id": "MSFT-2023-revenue_growth_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2023,
+      "metric": "revenue_growth_pct",
+      "expected": 6.88,
+      "unit": "percent",
+      "base_fiscal_year": 2022
+    },
+    {
+      "id": "MSFT-2022-revenue",
+      "ticker": "MSFT",
+      "fiscal_year": 2022,
+      "metric": "revenue",
+      "expected": 198270,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2022-operating_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2022,
+      "metric": "operating_income",
+      "expected": 83383,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2022-net_income",
+      "ticker": "MSFT",
+      "fiscal_year": 2022,
+      "metric": "net_income",
+      "expected": 72738,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "MSFT-2022-operating_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2022,
+      "metric": "operating_margin_pct",
+      "expected": 42.06,
+      "unit": "percent"
+    },
+    {
+      "id": "MSFT-2022-net_margin_pct",
+      "ticker": "MSFT",
+      "fiscal_year": 2022,
+      "metric": "net_margin_pct",
+      "expected": 36.69,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2023-revenue",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "revenue",
+      "expected": 383285,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2023-operating_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "operating_income",
+      "expected": 114301,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2023-net_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "net_income",
+      "expected": 96995,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2023-operating_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "operating_margin_pct",
+      "expected": 29.82,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2023-net_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "net_margin_pct",
+      "expected": 25.31,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2023-revenue_growth_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2023,
+      "metric": "revenue_growth_pct",
+      "expected": -2.8,
+      "unit": "percent",
+      "base_fiscal_year": 2022
+    },
+    {
+      "id": "AAPL-2022-revenue",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "revenue",
+      "expected": 394328,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2022-operating_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "operating_income",
+      "expected": 119437,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2022-net_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "net_income",
+      "expected": 99803,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2022-operating_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "operating_margin_pct",
+      "expected": 30.29,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2022-net_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "net_margin_pct",
+      "expected": 25.31,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2022-revenue_growth_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2022,
+      "metric": "revenue_growth_pct",
+      "expected": 7.79,
+      "unit": "percent",
+      "base_fiscal_year": 2021
+    },
+    {
+      "id": "AAPL-2021-revenue",
+      "ticker": "AAPL",
+      "fiscal_year": 2021,
+      "metric": "revenue",
+      "expected": 365817,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2021-operating_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2021,
+      "metric": "operating_income",
+      "expected": 108949,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2021-net_income",
+      "ticker": "AAPL",
+      "fiscal_year": 2021,
+      "metric": "net_income",
+      "expected": 94680,
+      "unit": "USD_millions"
+    },
+    {
+      "id": "AAPL-2021-operating_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2021,
+      "metric": "operating_margin_pct",
+      "expected": 29.78,
+      "unit": "percent"
+    },
+    {
+      "id": "AAPL-2021-net_margin_pct",
+      "ticker": "AAPL",
+      "fiscal_year": 2021,
+      "metric": "net_margin_pct",
+      "expected": 25.88,
+      "unit": "percent"
+    }
+  ]
+}

@@ -11,15 +11,17 @@ from .advanced import router as advanced_router
 from .exports import router as export_router
 from .watchlist import router as watchlist_router
 from .documents import router as document_router
+from .engineering import router as engineering_router
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
-app = FastAPI(title="ScaraScope AI", version="0.3.0", description="Source-grounded financial research and hybrid LLM provider routing")
+app = FastAPI(title="ScaraScope AI", version="0.4.0", description="Source-grounded financial research and hybrid LLM provider routing")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.include_router(router)
 app.include_router(advanced_router)
 app.include_router(export_router)
 app.include_router(watchlist_router)
 app.include_router(document_router)
+app.include_router(engineering_router)
 
 
 @app.middleware("http")
@@ -37,3 +39,8 @@ async def demo_rate_limit(request: Request, call_next):
 @app.get("/", include_in_schema=False)
 async def index():
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/engineering", include_in_schema=False)
+async def engineering_lab():
+    return FileResponse(STATIC_DIR / "engineering" / "index.html")

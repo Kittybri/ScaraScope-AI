@@ -103,3 +103,22 @@ SEC HTML retrieval is limited to 5 MB and indexed sections are bounded;
 this is *not* general PDF parsing, embeddings, a vector database, or exhaustive
 multi-filing retrieval. The 10-Q reader uses the most recent 10-Q, which may not
 contain a new risk-factor disclosure. Lexical retrieval can miss synonyms.
+
+
+## v0.4 Engineering Lab dependency flow
+
+```text
+Browser /engineering -> api/engineering.py (read-only, API-key dependency)
+                          -> evaluation/runner.py
+                             -> evaluation/financial_accuracy.py -> finance/calculations.py
+                             -> evaluation/reliability.py -> ai/router.py + fake providers
+                             -> evaluation/retrieval.py -> ai/retrieval/lexical.py
+                             -> evaluation/benchmark.py -> finance/
+                          -> evaluation/runner.recent_reports() [bounded local JSON]
+
+verification/period_checks.py | source_validation.py | financial_claims.py | citations.py
+```
+
+`verification/` has no dependency on FastAPI, Discord or provider SDKs. HTTP controls remain in `api/`; static frontend assets are under `static/engineering/`. The benchmark runner neither reads API secrets nor contacts actual SEC/Groq/Ollama providers. Historical source URLs in JSON are **displayed reference metadata**, never used for arbitrary network fetching.
+
+Add future test datasets in `evaluation/datasets/`, reusable checks in `verification/`, and API routes in the relevant separate API module. Keep code sizes bounded and add independent test cases before advertising new capabilities.
