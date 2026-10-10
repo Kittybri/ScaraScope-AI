@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="550" viewBox="0 0 1440 550" role="img" aria-labelledby="t d">
+<title id="t">ScaraScope AI feature map</title><desc id="d">Six areas of the ScaraScope prototype: SEC filing Q and A, financial metrics, peer comparisons and DCF, privacy-aware inference, reports, and engineering evaluation.</desc>
+<defs><linearGradient id="b" x1="0" x2="1" y2="1"><stop stop-color="#0A1D30"/><stop offset="1" stop-color="#102F46"/></linearGradient><linearGradient id="c" x1="0" x2="1"><stop stop-color="#55E8BE"/><stop offset="1" stop-color="#78BBEF"/></linearGradient></defs>
+<rect width="1440" height="550" rx="24" fill="url(#b)"/>
+<text x="46" y="55" font-size="16" fill="#6EE4C8" font-family="Inter,Arial,sans-serif" font-weight="700" letter-spacing="3">PRODUCT CAPABILITIES</text>
+<text x="46" y="102" font-size="37" fill="#F0FAFF" font-family="Inter,Arial,sans-serif" font-weight="700">Research tools with clear responsibilities</text>
+<g>
+<rect x="44" y="137" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="65" y="161" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="93" y="198" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">01</text>
+<text x="136" y="187" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">SEC filing Q&amp;A</text>
+<text x="136" y="220" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Find relevant 10-K and 10-Q excerpts.</text>
+<text x="136" y="246" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Show provenance and citation labels.</text>
+<path d="M66 278 H452" stroke="#25566A"/>
+<circle cx="76" cy="278" r="4" fill="#5FE0BE"/>
+</g><g>
+<rect x="506" y="137" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="527" y="161" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="555" y="198" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">02</text>
+<text x="598" y="187" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">Financial analysis</text>
+<text x="598" y="220" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Calculate annual ratios in Python.</text>
+<text x="598" y="246" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Retain filing dates, units and periods.</text>
+<path d="M528 278 H914" stroke="#25566A"/>
+<circle cx="538" cy="278" r="4" fill="#5FE0BE"/>
+</g><g>
+<rect x="968" y="137" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="989" y="161" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="1017" y="198" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">03</text>
+<text x="1060" y="187" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">Comparison + DCF</text>
+<text x="1060" y="220" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Compare public-company financial facts.</text>
+<text x="1060" y="246" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Explore assumption-driven scenarios.</text>
+<path d="M990 278 H1376" stroke="#25566A"/>
+<circle cx="1000" cy="278" r="4" fill="#5FE0BE"/>
+</g><g>
+<rect x="44" y="329" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="65" y="353" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="93" y="390" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">04</text>
+<text x="136" y="379" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">Hybrid inference</text>
+<text x="136" y="412" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Route between Ollama and Groq.</text>
+<text x="136" y="438" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Enforce local-only privacy policy.</text>
+<path d="M66 470 H452" stroke="#25566A"/>
+<circle cx="76" cy="470" r="4" fill="#5FE0BE"/>
+</g><g>
+<rect x="506" y="329" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="527" y="353" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="555" y="390" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">05</text>
+<text x="598" y="379" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">Professional exports</text>
+<text x="598" y="412" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Create PDF and Excel reports.</text>
+<text x="598" y="438" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Keep calculations independently inspectable.</text>
+<path d="M528 470 H914" stroke="#25566A"/>
+<circle cx="538" cy="470" r="4" fill="#5FE0BE"/>
+</g><g>
+<rect x="968" y="329" width="430" height="169" rx="18" fill="#0F2940" stroke="#2B5870"/>
+<rect x="989" y="353" width="56" height="56" rx="14" fill="#153F4D" stroke="#328F84"/>
+<text x="1017" y="390" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="800" fill="#63EAC9">06</text>
+<text x="1060" y="379" font-size="23" font-weight="700" fill="#F2FCFF" font-family="Inter,Arial,sans-serif">Engineering Lab</text>
+<text x="1060" y="412" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Run reproducible offline benchmarks.</text>
+<text x="1060" y="438" font-size="16" fill="#AFCCD9" font-family="Inter,Arial,sans-serif">Inspect tests, failures and evidence.</text>
+<path d="M990 470 H1376" stroke="#25566A"/>
+<circle cx="1000" cy="470" r="4" fill="#5FE0BE"/>
+</g>
+</svg>

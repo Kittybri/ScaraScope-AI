@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="440" viewBox="0 0 1440 440" role="img" aria-labelledby="t d">
+<title id="t">ScaraScope AI</title><desc id="d">Dark navy cover illustration for ScaraScope AI, with financial data curves, document analysis, and connected AI nodes. No data shown are actual financial results.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071626"/><stop offset=".52" stop-color="#0D2540"/><stop offset="1" stop-color="#071722"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#40E7BE"/><stop offset="1" stop-color="#49A8EE"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#147A83" stop-opacity=".5"/><stop offset="1" stop-color="#147A83" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#5C819E" stroke-opacity=".13" stroke-width="1"/></pattern>
+<filter id="glow"><feGaussianBlur stdDeviation="9"/></filter>
+<clipPath id="edge"><rect width="1440" height="440" rx="28"/></clipPath>
+</defs>
+<g clip-path="url(#edge)">
+<rect width="1440" height="440" fill="url(#bg)"/><rect width="1440" height="440" fill="url(#grid)"/>
+<circle cx="1090" cy="200" r="355" fill="url(#halo)"/>
+<path d="M0 390C280 320 380 442 615 369S1110 325 1440 405" stroke="#39D2B1" stroke-opacity=".17" stroke-width="2" fill="none"/>
+<rect x="48" y="45" width="44" height="44" rx="13" fill="#154257" stroke="#4EE2BF" stroke-opacity=".7"/>
+<path d="M78 59H62V67H77V74H62" stroke="#7AF4D1" fill="none" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="108" y="74" font-size="18" fill="#B7D7E4" font-family="Inter,Segoe UI,Arial,sans-serif" letter-spacing="3.5" font-weight="700">INTELLIGENCE BUILT ON EVIDENCE</text>
+<text x="51" y="188" font-size="81" fill="#F8FDFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-weight="800" letter-spacing="-2.7">ScaraScope <tspan fill="#58E9C7">AI</tspan></text>
+<text x="53" y="237" font-size="25" fill="#C6DEEC" font-family="Inter,Segoe UI,Arial,sans-serif">Financial research, made traceable.</text>
+<text x="54" y="278" font-size="17" fill="#98BDD1" font-family="Inter,Segoe UI,Arial,sans-serif">SEC filings  /  Python analysis  /  Optional hybrid AI</text>
+<g font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="600">
+<rect x="52" y="326" width="182" height="45" rx="22" fill="#123845" stroke="#298E80"/>
+<circle cx="77" cy="349" r="6" fill="#54E4BB"/><text x="96" y="355" fill="#D8FCF3">Source-grounded</text>
+<rect x="250" y="326" width="172" height="45" rx="22" fill="#122F4D" stroke="#36668A"/>
+<circle cx="275" cy="349" r="6" fill="#77C5FA"/><text x="293" y="355" fill="#D9F0FF">Modular Python</text>
+<rect x="438" y="326" width="180" height="45" rx="22" fill="#122F4D" stroke="#36668A"/>
+<circle cx="463" cy="349" r="6" fill="#77C5FA"/><text x="481" y="355" fill="#D9F0FF">Tested workflows</text>
+</g>
+<!-- geometric source document -->
+<g transform="translate(812 77) rotate(-7)">
+<rect x="0" y="0" width="225" height="278" rx="19" fill="#102940" stroke="#5085A0" stroke-width="2"/>
+<rect x="18" y="22" width="90" height="9" rx="4" fill="#55E0BE"/>
+<rect x="18" y="52" width="181" height="7" rx="3" fill="#7491A5" opacity=".55"/>
+<rect x="18" y="72" width="157" height="7" rx="3" fill="#7491A5" opacity=".35"/>
+<rect x="18" y="92" width="172" height="7" rx="3" fill="#7491A5" opacity=".35"/>
+<rect x="18" y="132" width="184" height="100" rx="9" fill="#0B1E31" stroke="#204866"/>
+<path d="M31 203 L66 180 L100 191 L132 149 L166 162 L190 143" fill="none" stroke="#55EDC8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="132" cy="149" r="5" fill="#55EDC8"/><circle cx="190" cy="143" r="5" fill="#55EDC8"/>
+<rect x="18" y="246" width="115" height="8" rx="4" fill="#7A9BAD" opacity=".36"/>
+</g>
+<!-- abstract neural and AI rings -->
+<circle cx="1198" cy="225" r="121" fill="none" stroke="#4AC6BC" stroke-opacity=".18" stroke-width="27"/>
+<circle cx="1198" cy="225" r="105" fill="#0C2435" stroke="#62E5D3" stroke-width="2"/>
+<circle cx="1198" cy="225" r="65" fill="none" stroke="#63D9E6" stroke-opacity=".4" stroke-dasharray="5 9" stroke-width="2"/>
+<g stroke="#70E9DD" stroke-opacity=".7" stroke-width="2" fill="none">
+<path d="M1173 184L1225 204 1194 239 1239 261 1157 268 1173 184 1194 239 1157 268 1225 204 1239 261"/>
+</g>
+<g fill="#5FF1D0"><circle cx="1173" cy="184" r="8"/><circle cx="1225" cy="204" r="7"/><circle cx="1194" cy="239" r="10"/><circle cx="1239" cy="261" r="7"/><circle cx="1157" cy="268" r="8"/></g>
+<path d="M1040 173 C1070 168 1082 190 1090 216" fill="none" stroke="url(#accent)" stroke-width="3" stroke-dasharray="7 8" opacity=".7"/>
+<rect x="1374" y="48" width="12" height="12" rx="3" fill="#6EE5CF" opacity=".65"/>
+<rect x="1344" y="78" width="7" height="7" rx="2" fill="#6EE5CF" opacity=".35"/>
+</g></svg>

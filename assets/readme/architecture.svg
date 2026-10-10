@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="465" viewBox="0 0 1440 465" role="img" aria-labelledby="t d">
+<title id="t">ScaraScope AI architecture</title><desc id="d">Request interfaces feed a SEC retrieval layer, deterministic finance engine, optional Ollama Groq routing, and report outputs. Privacy, verification and evaluation are cross-cutting controls.</desc>
+<defs><linearGradient id="b" x1="0" x2="1" y2="1"><stop stop-color="#081B2D"/><stop offset="1" stop-color="#113249"/></linearGradient></defs>
+<rect width="1440" height="465" rx="24" fill="url(#b)"/>
+<text x="45" y="53" font-size="16" fill="#6DE4CB" font-family="Inter,Arial,sans-serif" font-weight="700" letter-spacing="3">SYSTEM ARCHITECTURE</text>
+<text x="45" y="96" font-size="34" fill="#F0FAFF" font-family="Inter,Arial,sans-serif" font-weight="700">Separated by design. Connected by evidence.</text>
+<g>
+<rect x="44" y="140" width="238" height="213" rx="17" fill="#0E2C42" stroke="#346078" stroke-width="1.5"/>
+<rect x="61" y="158" width="38" height="38" rx="10" fill="#14444B" />
+<text x="80" y="185" text-anchor="middle" fill="#6AE9CF" font-size="19" font-family="Inter,Arial,sans-serif" font-weight="700">1</text>
+<text x="61" y="228" fill="#F0FBFF" font-size="20" font-weight="700" font-family="Inter,Arial,sans-serif">INPUTS</text>
+<text x="61" y="261" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Web dashboard</text><text x="61" y="287" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">FastAPI</text><text x="61" y="313" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Optional Discord</text>
+</g><g>
+<rect x="323" y="140" width="238" height="213" rx="17" fill="#0E2C42" stroke="#346078" stroke-width="1.5"/>
+<rect x="340" y="158" width="38" height="38" rx="10" fill="#14444B" />
+<text x="359" y="185" text-anchor="middle" fill="#6AE9CF" font-size="19" font-family="Inter,Arial,sans-serif" font-weight="700">2</text>
+<text x="340" y="228" fill="#F0FBFF" font-size="20" font-weight="700" font-family="Inter,Arial,sans-serif">SEC DATA</text>
+<text x="340" y="261" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Company Facts / XBRL</text><text x="340" y="287" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">10-K / 10-Q sections</text><text x="340" y="313" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Cited filing links</text>
+</g><g>
+<rect x="602" y="140" width="238" height="213" rx="17" fill="#0E2C42" stroke="#45CFB4" stroke-width="2"/>
+<rect x="619" y="158" width="38" height="38" rx="10" fill="#14444B" />
+<text x="638" y="185" text-anchor="middle" fill="#6AE9CF" font-size="19" font-family="Inter,Arial,sans-serif" font-weight="700">3</text>
+<text x="619" y="228" fill="#F0FBFF" font-size="20" font-weight="700" font-family="Inter,Arial,sans-serif">PYTHON ENGINE</text>
+<text x="619" y="261" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Financial metrics</text><text x="619" y="287" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Comparison and DCF</text><text x="619" y="313" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Research orchestration</text>
+</g><g>
+<rect x="881" y="140" width="238" height="213" rx="17" fill="#0E2C42" stroke="#346078" stroke-width="1.5"/>
+<rect x="898" y="158" width="38" height="38" rx="10" fill="#14444B" />
+<text x="917" y="185" text-anchor="middle" fill="#6AE9CF" font-size="19" font-family="Inter,Arial,sans-serif" font-weight="700">4</text>
+<text x="898" y="228" fill="#F0FBFF" font-size="20" font-weight="700" font-family="Inter,Arial,sans-serif">AI ROUTER</text>
+<text x="898" y="261" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Ollama / Groq</text><text x="898" y="287" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Privacy-aware fallback</text><text x="898" y="313" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Deterministic option</text>
+</g><g>
+<rect x="1160" y="140" width="238" height="213" rx="17" fill="#0E2C42" stroke="#346078" stroke-width="1.5"/>
+<rect x="1177" y="158" width="38" height="38" rx="10" fill="#14444B" />
+<text x="1196" y="185" text-anchor="middle" fill="#6AE9CF" font-size="19" font-family="Inter,Arial,sans-serif" font-weight="700">5</text>
+<text x="1177" y="228" fill="#F0FBFF" font-size="20" font-weight="700" font-family="Inter,Arial,sans-serif">OUTPUTS</text>
+<text x="1177" y="261" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Evidence-linked answers</text><text x="1177" y="287" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">PDF / Excel reports</text><text x="1177" y="313" fill="#B0D0DD" font-size="15" font-family="Inter,Arial,sans-serif">Engineering Lab</text>
+</g>
+<path d="M 288 240 h 26 m -8 -8 l 8 8 -8 8" stroke="#61DBC7" stroke-width="2.4" stroke-linejoin="round" fill="none"/><path d="M 567 240 h 26 m -8 -8 l 8 8 -8 8" stroke="#61DBC7" stroke-width="2.4" stroke-linejoin="round" fill="none"/><path d="M 846 240 h 26 m -8 -8 l 8 8 -8 8" stroke="#61DBC7" stroke-width="2.4" stroke-linejoin="round" fill="none"/><path d="M 1125 240 h 26 m -8 -8 l 8 8 -8 8" stroke="#61DBC7" stroke-width="2.4" stroke-linejoin="round" fill="none"/>
+<rect x="45" y="379" width="1350" height="56" rx="13" fill="#0C2837" stroke="#2C5868"/>
+<text x="69" y="413" font-size="17" fill="#73EBCF" font-family="Inter,Arial,sans-serif" font-weight="700">CROSS-CUTTING CONTROLS</text>
+<text x="386" y="413" font-size="17" fill="#D8EBF2" font-family="Inter,Arial,sans-serif">Local-only privacy</text>
+<text x="650" y="413" font-size="17" fill="#D8EBF2" font-family="Inter,Arial,sans-serif">Source and arithmetic checks</text>
+<text x="1059" y="413" font-size="17" fill="#D8EBF2" font-family="Inter,Arial,sans-serif">Offline evaluations</text>
+</svg>
