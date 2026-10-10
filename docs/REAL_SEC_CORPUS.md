@@ -103,3 +103,8 @@ security boundaries and limitations, see [ACCESSION_PINNING.md](ACCESSION_PINNIN
 
 Live retrieval and independent answer review remain pending; these changes do
 not imply successful live extraction or audited question-answer accuracy.
+
+
+## v0.11: pinned four-issuer intake plan and blind review packet
+
+See [SEC_EVIDENCE_INTAKE.md](SEC_EVIDENCE_INTAKE.md) for the versioned Apple/Microsoft/Alphabet/Amazon source plan, offline validation, manual GitHub Actions collection, and blind HTML passage review. The 16 provisional questions are **unreviewed**; the actual SEC source snapshot and independent human labels still need to be collected.

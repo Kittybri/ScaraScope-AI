@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "filings": [
+    {
+      "issuer": "Apple", "cik": "0000320193", "accession": "0000320193-23-000106", "form": "10-K", "split": "dev",
+      "expected_filing_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm",
+      "questions": [
+        {"question": "What were Apple's total net sales in fiscal year 2023?", "presumed_answerable": true},
+        {"question": "What did management identify as a contributor to the fiscal 2023 net sales decrease?", "presumed_answerable": true},
+        {"question": "What supply-chain interruptions does Apple identify as material business risks?", "presumed_answerable": true},
+        {"question": "What exact price will Apple's common stock reach on December 31, 2030?", "presumed_answerable": false}
+      ]
+    },
+    {
+      "issuer": "Microsoft", "cik": "0000789019", "accession": "0000950170-24-087843", "form": "10-K", "split": "dev",
+      "expected_filing_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+      "questions": [
+        {"question": "Which cybersecurity and digital infrastructure risks did Microsoft disclose for fiscal year 2024?", "presumed_answerable": true},
+        {"question": "What did Microsoft report about its cloud-services demand and infrastructure investment?", "presumed_answerable": true},
+        {"question": "How did management describe major changes in operating performance during fiscal 2024?", "presumed_answerable": true},
+        {"question": "What exact stock price did Microsoft guarantee for the year 2030?", "presumed_answerable": false}
+      ]
+    },
+    {
+      "issuer": "Alphabet", "cik": "0001652044", "accession": "0001652044-24-000022", "form": "10-K", "split": "heldout",
+      "expected_filing_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/goog-20231231.htm",
+      "questions": [
+        {"question": "How did Alphabet discuss its advertising revenues and business concentration in 2023?", "presumed_answerable": true},
+        {"question": "Which risks did Alphabet disclose involving data centers and cloud infrastructure?", "presumed_answerable": true},
+        {"question": "What changes in 2023 operating performance did management emphasize?", "presumed_answerable": true},
+        {"question": "What exact dollar value will Alphabet earn in fiscal year 2032?", "presumed_answerable": false}
+      ]
+    },
+    {
+      "issuer": "Amazon", "cik": "0001018724", "accession": "0001018724-24-000008", "form": "10-K", "split": "heldout",
+      "expected_filing_url": "https://www.sec.gov/Archives/edgar/data/1018724/000101872424000008/amzn-20231231.htm",
+      "questions": [
+        {"question": "What financial performance trends did Amazon describe for its AWS business in 2023?", "presumed_answerable": true},
+        {"question": "Which operational or technological risks did Amazon identify in its 2023 filing?", "presumed_answerable": true},
+        {"question": "What costs or operating income changes did Amazon management discuss for fiscal 2023?", "presumed_answerable": true},
+        {"question": "What exact market capitalization did Amazon guarantee for December 2030?", "presumed_answerable": false}
+      ]
+    }
+  ]
+}

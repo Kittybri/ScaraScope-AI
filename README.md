@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.10 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.11 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -186,6 +186,14 @@ ScaraScope now lets you **pin document Q&A and SEC corpus ingestion to a specifi
 
 **Evidence boundary:** Official SEC source identifiers were checked, but the app's real-document download and extraction have **not** been tested against live SEC servers in this environment. No independently human-reviewed real-corpus retrieval or LLM accuracy score is claimed.
 
+## New in v0.11: pinned SEC evidence intake and blind review
+
+ScaraScope now provides an **operator-run four-issuer SEC evidence intake** with exact historical 10-K accessions, 16 provisional (unreviewed) research questions, issuer-disjoint development/held-out groups, and a script-free **blind HTML review packet** containing source passages and stable evidence IDs. The reader hides gold answers and previous reviewer notes; it does not claim that a human verified any result.
+
+A new **SEC Evidence Intake (Manual)** GitHub Actions workflow can fetch the planned public filings after the owner configures a real SEC contact User-Agent as an Actions secret and starts the workflow. It does not run on push or on a schedule. Collected excerpts, unreviewed annotations, and the review packet are uploaded as a short-retention artifact. Normal CI only validates the plan offline.
+
+**Not yet completed:** the manual intake has not been run with a real SEC contact in the owner's environment, sections may fail to extract or exceed caps, and no independent human review or live financial-QA accuracy has been established. Full instructions: [SEC Evidence Intake and Blind Review](docs/SEC_EVIDENCE_INTAKE.md).
+
 ## Quick start
 
 Run a **fully offline fictional demo**, with no API keys or Oracle account required.
@@ -220,7 +228,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **138 passing tests** |
+| Full automated Python test suite | **150 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

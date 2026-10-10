@@ -1,0 +1,53 @@
+name: SEC Evidence Intake (Manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  collect-and-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e '.[test]'
+      - name: Validate source plan without making SEC requests
+        run: python -m scarascope.evaluation.corpus.cli plan-check --plan docs/evidence/sec_intake_plan_v1.json
+      - name: Check SEC contact configuration
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: |
+          if [ -z "$SEC_USER_AGENT" ]; then
+            echo 'SEC_USER_AGENT secret is not configured. Add it in GitHub repository Actions secrets.' >&2
+            exit 1
+          fi
+      - name: Download pinned public SEC filing excerpts
+        env:
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+        run: |
+          python -m scarascope.evaluation.corpus.cli ingest-plan \
+            --plan docs/evidence/sec_intake_plan_v1.json --corpus data/sec-corpus \
+            > "$RUNNER_TEMP/sec-intake-result.json"
+      - name: Generate unreviewed questions and blind review packet
+        run: |
+          python -m scarascope.evaluation.corpus.cli draft-plan \
+            --plan docs/evidence/sec_intake_plan_v1.json --corpus data/sec-corpus \
+            --output data/sec-corpus/questions.jsonl
+          python -m scarascope.evaluation.corpus.cli review-packet \
+            --plan docs/evidence/sec_intake_plan_v1.json --corpus data/sec-corpus \
+            --annotations data/sec-corpus/questions.jsonl \
+            --output data/sec-corpus/blind-review.html
+      - name: Upload evidence for manual human review
+        uses: actions/upload-artifact@v4
+        with:
+          name: scarascope-sec-unreviewed-intake
+          path: |
+            data/sec-corpus/*.json
+            data/sec-corpus/questions.jsonl
+            data/sec-corpus/blind-review.html
+          retention-days: 7
+          if-no-files-found: error

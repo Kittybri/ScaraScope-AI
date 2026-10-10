@@ -18,6 +18,8 @@ from .annotations import Annotation, load_annotations
 from .scoring import compare_corpus
 from .baselines import compare_to_baseline, load_baseline
 from .review_audit import review_audit
+from .intake import load_intake_plan, collect_intake, question_drafts, write_drafts
+from .review_packet import render_review_packet, save_review_packet
 from ...data.sec.filings import FilingClient
 from ...ai.retrieval import chunk_sections
 from ...ai.retrieval.semantic import LocalSentenceEncoder
@@ -94,6 +96,21 @@ def main() -> None:
     dra.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
     dra.add_argument("--heldout-cik",action="append",required=True,help="CIK reserved for held-out evaluation")
     dra.add_argument("--output",type=Path,required=True,help="New JSONL file; refuses to overwrite existing annotations")
+    check=sub.add_parser("plan-check",help="Validate the pinned SEC intake plan offline")
+    check.add_argument("--plan",type=Path,required=True)
+    batch=sub.add_parser("ingest-plan",help="Fetch all specified accession-pinned SEC filings")
+    batch.add_argument("--plan",type=Path,required=True)
+    batch.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
+    seeded=sub.add_parser("draft-plan",help="Create unreviewed source-linked question drafts")
+    seeded.add_argument("--plan",type=Path,required=True)
+    seeded.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
+    seeded.add_argument("--output",type=Path,required=True)
+    packet=sub.add_parser("review-packet",help="Create a read-only, blind HTML SEC source packet")
+    packet.add_argument("--plan",type=Path,required=True)
+    packet.add_argument("--corpus",type=Path,default=DEFAULT_CORPUS)
+    packet.add_argument("--annotations",type=Path,help="Existing questions; hides gold labels in packet")
+    packet.add_argument("--output",type=Path,required=True)
+    packet.add_argument("--max-passages",type=int,default=36)
     inv=sub.choices["inventory"]
     inv.add_argument("--all-passages",action="store_true",help="List all bounded evidence passage IDs for reviewer audit")
     ev=sub.choices["evaluate"]
@@ -105,7 +122,40 @@ def main() -> None:
     ev.add_argument("--baseline",type=Path,help="Compare with pinned, identical benchmark report")
     ev.add_argument("--fail-on-regression",action="store_true",help="Nonzero exit when any comparable retrieval metric decreases")
     args=parser.parse_args()
-    if args.command=="ingest":
+    if args.command=="plan-check":
+        plan,digest=load_intake_plan(args.plan)
+        print(json.dumps({"status":"plan_validated_offline", "filings":len(plan.filings),
+                          "draft_questions":sum(len(x.questions) for x in plan.filings),
+                          "plan_sha256":digest,"filings_downloaded":0,"reviewed_questions":0},indent=2))
+    elif args.command=="ingest-plan":
+        from dotenv import load_dotenv
+        load_dotenv()
+        plan,digest=load_intake_plan(args.plan)
+        result=asyncio.run(collect_intake(plan,args.corpus,os.getenv("SEC_USER_AGENT","")))
+        result["plan_sha256"]=digest
+        print(json.dumps(result,indent=2))
+    elif args.command=="draft-plan":
+        plan,digest=load_intake_plan(args.plan)
+        cases=question_drafts(plan,load_snapshots(args.corpus))
+        write_drafts(cases,args.output)
+        print(json.dumps({"status":"unreviewed_drafts", "questions":len(cases),
+                          "reviewed":0,"file":str(args.output),"plan_sha256":digest},indent=2))
+    elif args.command=="review-packet":
+        plan,_=load_intake_plan(args.plan)
+        snaps=load_snapshots(args.corpus)
+        if args.annotations:
+            cases,_=load_annotations(args.annotations)
+        else:
+            cases=question_drafts(plan,snaps)
+        # Verify corpus matches plan BEFORE revealing any excerpts.
+        question_drafts(plan,snaps)
+        selected={(x.cik,x.accession,x.form) for x in plan.filings}
+        html=render_review_packet([s for s in snaps if (s.cik,s.accession,s.form) in selected],cases,
+                                  max_passages_per_filing=args.max_passages)
+        save_review_packet(html,args.output)
+        print(json.dumps({"status":"blind_packet_created_unscored","file":str(args.output),
+                          "questions":len(cases),"reviewed_claims":0},indent=2))
+    elif args.command=="ingest":
         try:
             from dotenv import load_dotenv
             load_dotenv()

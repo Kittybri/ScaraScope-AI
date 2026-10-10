@@ -84,3 +84,20 @@ and a reviewed incident/retention policy. These were not simulated as complete.
 **Still not completed:** live SEC downloads, reproducible source-backed
 independently reviewed financial QA labels, live model comparisons, secure
 Oracle deployment, and authentic application screenshots.
+
+## Implemented in v0.11: repeatable real-filing evidence intake (review not yet completed)
+
+- [x] Versioned, metadata-validated four-issuer SEC accession intake plan and
+      16 provisional questions with issuer-disjoint development/held-out groups.
+- [x] All-or-fail accession identity preflight before storing immutable,
+      source-hashed SEC section snapshots.
+- [x] Bounded blind HTML source review packet with escaped text, exact local
+      evidence IDs and original SEC filing links; no gold labels or reviewer notes.
+- [x] Manually triggered GitHub Actions evidence collection workflow requiring
+      an operator-owned SEC contact secret, with short-retention artifact upload.
+- [x] Offline plan validation in ordinary CI and adversarial source/review tests.
+
+**Still pending:** successful live execution of that manual intake workflow,
+actual filing/section quality inspection, *independent human* gold review,
+held-out retrieval measurements, real LLM quality/latency comparisons and secure
+Oracle deployment. No offline test automatically certifies those conditions.

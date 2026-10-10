@@ -18,6 +18,8 @@ jobs:
         run: python -m pytest -q --junitxml="$RUNNER_TEMP/pytest-results.xml"
       - name: Produce reproducible offline benchmark report
         run: python -m scarascope.evaluation.runner --fail-on-regression --output "$RUNNER_TEMP/scarascope-benchmark.json" > /dev/null
+      - name: Validate pinned real-SEC intake plan without contacting SEC
+        run: python -m scarascope.evaluation.corpus.cli plan-check --plan docs/evidence/sec_intake_plan_v1.json
       - name: Verify SEC corpus tooling stays offline in CI
         run: python -m scarascope.evaluation.corpus.cli inventory > "$RUNNER_TEMP/sec-corpus-readiness.json"
       - name: Upload SEC corpus readiness artifact
