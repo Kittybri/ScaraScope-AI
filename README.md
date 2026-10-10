@@ -26,7 +26,7 @@
   <a href="docs/ENGINEERING_CASE_STUDY.md">Case study</a>
 </p>
 
-> **Project status: v0.6 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
+> **Project status: v0.7 prototype.** Public-company financial analysis and best-effort filing-text Q&A are implemented, but this is not a trading platform, investment adviser, or production-grade financial-data service. Figures in `DEMO` are fictional. Groq and Oracle Cloud are not configured in the repository.
 
 ## What it does
 
@@ -65,6 +65,18 @@ ScaraScope now includes an offline, SEC-source-linked **question-held-out retrie
 
 These changes are one verified development wave, **not** a finished full-filing QA corpus, proven hallucination elimination, real provider performance comparison or production deployment.
 
+## New in v0.7: real SEC corpus validation tools
+
+The new **operator-run real-filing evaluation pipeline** downloads latest SEC 10-K/10-Q sections when a real SEC contact identifier and network are provided, saves accession-pinned and SHA-256-checked extracted text snapshots locally, and generates **unreviewed** question drafts for independent review. The evaluation supports issuer-disjoint held-out splits, refuses mismatched SEC evidence, and deliberately reports `not_evaluated` until reviewed questions include both answerable and unanswerable cases.
+
+The Engineering Lab now displays real-corpus readiness separately from existing reconstructed-source benchmark numbers. An opt-in live Ollama/Groq probe measures latency and failures, but never invents usage costs or financial answer accuracy.
+
+**Evidence still missing:** actual multi-company filing downloads in the owner's environment, independently reviewed QA gold labels, live Ollama/Groq performance and independently measured financial-answer accuracy. None of those have been claimed as completed.
+
+- [Real SEC corpus and review guide](docs/REAL_SEC_CORPUS.md)
+- [Opt-in live-provider smoke test](docs/LIVE_PROVIDER_PROBE.md)
+- [Review-gated evaluation architecture decision](docs/adr/0002-snapshots-and-review-gated-metrics.md)
+
 ## Quick start
 
 Run a **fully offline fictional demo**, with no API keys or Oracle account required.
@@ -99,7 +111,7 @@ ScaraScope is built as an inspectable software project, not a feature-count comp
 | Deterministic arithmetic checks | **6 / 6** |
 | Synthetic lexical-retrieval checks | **5 / 5** |
 | Simulated provider reliability and privacy checks | **6 / 6** |
-| Full automated Python test suite | **87 passing tests** |
+| Full automated Python test suite | **100 passing tests** |
 
 These are **offline regression/fixture results** from the v0.4 development run, **not real-world LLM answer-accuracy scores**. The fixed financial reference cases use historical Apple FY2023 and Microsoft FY2024 filing values. To reproduce the benchmark:
 

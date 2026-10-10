@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ScaraScope local corpus, generated benchmarks, SQLite and runtime state
+/data/

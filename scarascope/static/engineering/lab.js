@@ -31,10 +31,17 @@
   const sources=clear('sources');for(const url of data.suites.financial.sources){try{const parsed=new URL(url);if(parsed.protocol!=='https:'||parsed.hostname!=='www.sec.gov')continue;const a=node('a',parsed.pathname.split('/').at(-1));a.href=parsed.href;a.target='_blank';a.rel='noopener noreferrer';a.className='source-link';sources.append(a);}catch{}}
   const limits=clear('limitations');for(const text of data.limitations)limits.append(node('li',text));
  }
+ function renderCorpus(data){
+  const parent=clear('corpus-status');
+  parent.append(node('p',`${data.snapshots} validated filing snapshots · ${data.annotations.reviewed??0} reviewed questions · ${data.annotations.unreviewed??0} awaiting review.`));
+  parent.append(node('p',data.note,'muted'));
+  if(data.validation_error)parent.append(node('p',`Integrity validation failed: ${data.validation_error}`,'fail'));
+  for(const src of data.sources)parent.append(node('small',`${src.cik} · ${src.form} · accession ${src.accession} · SHA ${src.digest.slice(0,12)}`));
+ }
  function renderHistory(data){const parent=clear('history');if(!data.items.length){parent.append(node('p','No saved runs yet. Use the benchmark CLI to save one.','muted'));return;}for(const item of data.items){const div=node('div',`${item.generated_at}: ${item.status} (${item.file})`);parent.append(div);}}
  function renderRuntime(data){const parent=clear('runtime');const counters=Object.entries(data.counters);if(!counters.length)parent.append(node('div','No live provider calls recorded yet.'));for(const [event,count]of counters)parent.append(node('div',`${event}: ${count}`));}
- async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime')]);
+ async function refresh(){el('run').disabled=true;el('error').hidden=true;el('status').textContent='Running offline benchmark…';try{const [report,history,runtime,corpus]=await Promise.all([request('/api/engineering/benchmark'),request('/api/engineering/history'),request('/api/engineering/runtime'),request('/api/engineering/corpus-status')]);
    if(el('embed-eval').checked){report.qa_retrieval=await request('/api/engineering/retrieval-comparison?include_semantic=true');}
-   renderReport(report);renderHistory(history);renderRuntime(runtime);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
+   renderReport(report);renderHistory(history);renderRuntime(runtime);renderCorpus(corpus);}catch(e){el('status').textContent='Unable to run benchmark';el('error').textContent=e.message;el('error').hidden=false;}finally{el('run').disabled=false;}}
  el('run').addEventListener('click',refresh);el('suite').addEventListener('change',e=>renderCases(e.target.value));
 })();

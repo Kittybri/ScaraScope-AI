@@ -18,6 +18,15 @@ jobs:
         run: python -m pytest -q --junitxml="$RUNNER_TEMP/pytest-results.xml"
       - name: Produce reproducible offline benchmark report
         run: python -m scarascope.evaluation.runner --fail-on-regression --output "$RUNNER_TEMP/scarascope-benchmark.json" > /dev/null
+      - name: Verify SEC corpus tooling stays offline in CI
+        run: python -m scarascope.evaluation.corpus.cli inventory > "$RUNNER_TEMP/sec-corpus-readiness.json"
+      - name: Upload SEC corpus readiness artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scarascope-real-corpus-readiness
+          path: ${{ runner.temp }}/sec-corpus-readiness.json
+          if-no-files-found: warn
       - name: Upload benchmark JSON artifact
         uses: actions/upload-artifact@v4
         if: always()

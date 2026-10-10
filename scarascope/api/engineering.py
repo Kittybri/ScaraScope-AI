@@ -7,6 +7,9 @@ from ..ai.retrieval.semantic import LocalSentenceEncoder
 from ..core.config import Settings
 from .dependencies import get_settings
 from ..observability.metrics import snapshot
+from ..evaluation.corpus.snapshots import load_snapshots
+from ..evaluation.corpus.annotations import load_annotations, validate_annotations
+from ..evaluation.corpus.cli import DEFAULT_CORPUS
 
 router = APIRouter(prefix="/api/engineering", tags=["Engineering Lab"], dependencies=[Depends(require_api_key)])
 
@@ -38,3 +41,25 @@ async def retrieval_comparison(include_semantic: bool = False, settings: Setting
         return compare_retrievers(split="heldout", encoder=encoder)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/corpus-status")
+async def corpus_status():
+    """Local corpus readiness only, never arbitrary path reads or automatic SEC fetches."""
+    note = "No live SEC requests are made; no unreviewed labels count as accuracy results."
+    try:
+        snaps = load_snapshots(DEFAULT_CORPUS)
+        file = DEFAULT_CORPUS / "questions.jsonl"
+        counts = {"reviewed": 0, "unreviewed": 0}
+        if file.is_file():
+            labels, digest = load_annotations(file)
+            counts = validate_annotations(labels, snaps)
+            counts["annotation_sha256"] = digest
+        return {"snapshots":len(snaps), "sources":[{"cik":s.cik,"form":s.form,
+                    "accession":s.accession,"digest":s.text_sha256} for s in snaps],
+                "annotations":counts, "note":note}
+    except (ValueError, OSError) as exc:
+        # Deliberately surface only the category of local review/corpus error, not paths or text.
+        return {"snapshots":0,"sources":[],"annotations":{},
+                "note":"Corpus validation failed; check the local snapshot and annotation files.",
+                "validation_error":type(exc).__name__}

@@ -14,7 +14,7 @@ from .documents import router as document_router
 from .engineering import router as engineering_router
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
-app = FastAPI(title="ScaraScope AI", version="0.6.0", description="Source-grounded financial research and hybrid LLM provider routing")
+app = FastAPI(title="ScaraScope AI", version="0.7.0", description="Source-grounded financial research and hybrid LLM provider routing")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.include_router(router)
 app.include_router(advanced_router)
