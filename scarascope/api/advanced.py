@@ -11,6 +11,7 @@ from ..services.comparison import compare_companies
 from ..data.sec import SECError
 from ..observability.metrics import record, snapshot
 from ..evaluation.benchmark import run_benchmark
+from ..evaluation.retrieval import evaluate_retrieval
 from ..ai.availability import provider_status
 
 router = APIRouter(prefix="/api", dependencies=[Depends(require_api_key)])
@@ -51,6 +52,10 @@ async def agent_research(request: ResearchRequest,settings: Settings = Depends(g
 @router.get("/evaluation/deterministic")
 async def evaluation():
     return run_benchmark()
+
+@router.get("/evaluation/retrieval")
+async def retrieval_evaluation():
+    return evaluate_retrieval()
 
 @router.get("/diagnostics")
 async def diagnostics():

@@ -72,3 +72,34 @@ to `services/`, `finance/`, `reports/` and `storage/` rather than importing each
 
 The `scarascope/api/__init__.py` exports the ASGI application. The root
 `scarascope/discord_bot.py` is intentionally a tiny compatibility shim.
+
+## v0.3 SEC document retrieval and Q&A
+
+```text
+HTTP POST /api/documents/ask
+    -> services/document_qa.py (bounded research use case + privacy gate)
+       -> data/sec/client.py (ticker -> CIK; official SEC directory)
+       -> data/sec/filings.py (10-K/10-Q retrieval + section extraction)
+       -> ai/retrieval/lexical.py (bounded passages, offset, lexical ranking)
+       -> ai/router.py (optional Groq/Ollama synthesis; local-only enforced)
+    -> typed result with E1/E2 evidence labels, section locator, filing URL
+```
+
+Keep individual SEC parsers, retrieval strategies, generation prompts, service
+orchestration and HTTP routes in distinct modules. The base financial data
+pipeline should not import the document Q&A layer. Frontend code belongs in
+`static/documents.js`, never in SEC or LLM modules.
+
+**Trust boundary:** Filing text is untrusted data. Cited labels are mechanically
+checked against retrieved passages, but this does not prove that an LLM's
+interpretation is correct. No SEC paragraph deep link is asserted: offsets refer
+to normalized extracted section text and the link opens the overall filing.
+A `local_only` request never permits cloud fallback. Network and LLM calls are
+optional for `DEMO`, which uses visibly fictional evidence.
+
+**Known limitations:** Filings differ widely in markup and section naming;
+10-Q Item 2 and 10-K Items 1A/7 are extracted only when reliably identifiable.
+SEC HTML retrieval is limited to 5 MB and indexed sections are bounded;
+this is *not* general PDF parsing, embeddings, a vector database, or exhaustive
+multi-filing retrieval. The 10-Q reader uses the most recent 10-Q, which may not
+contain a new risk-factor disclosure. Lexical retrieval can miss synonyms.

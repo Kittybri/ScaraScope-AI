@@ -49,3 +49,23 @@ a commercial market-data feed, or a production-ready multi-tenant service.
 4. Use `/docs` for the deterministic evaluation endpoint. Review the case-by-case expected and observed values.
 5. Configure SEC contact information for real company facts, then compare two public companies or run the best-effort filing-text reader.
 6. Optionally configure Ollama and Groq. Use the router tests to demonstrate failover and the enforced local-only privacy boundary.
+
+## v0.3 add-on: SEC document intelligence
+
+- `POST /api/documents/ask` accepts a ticker (or `DEMO`), 10-K / 10-Q,
+  research question, retrieval limit (1–8), inference preference and privacy.
+- `scarascope/ai/retrieval/lexical.py` splits extracted filing sections into
+  bounded, stable passage IDs and ranks them by lexical term overlap.
+- No matching passage -> explicit insufficient-evidence response; no LLM call.
+- Optional Groq/Ollama synthesis must reference existing `[E1]` labels or the
+  service discards the answer and returns source excerpts instead.
+- All passage metadata includes accession, SEC filing URL, section locator,
+  and normalized section-relative character offset; **not** exact SEC page URLs.
+- `DEMO` uses fictional filing narrative without SEC or LLM API requests.
+- `GET /api/evaluation/retrieval` reports a small, synthetic retrieval suite.
+- The UI has an `Ask a filing` card, implemented entirely in separate
+  `static/documents.js` and `static/documents.css` files.
+
+These features **do not** implement embeddings, vector search, a full SEC
+filing corpus index, perfect HTML section extraction, paragraph deep links,
+independent semantic validation, or autonomous trading advice.

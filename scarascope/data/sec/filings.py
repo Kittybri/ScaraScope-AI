@@ -1,4 +1,4 @@
-"""Read specific public 10-K sections; URLs derived only from official SEC submissions.
+"""Read public 10-K and 10-Q sections; URLs derived only from official SEC submissions.
 
 This is conservative section extraction, NOT full paragraph-anchored filing RAG.
 SEC HTML varies widely; unavailable sections are reported instead of invented.
@@ -63,10 +63,10 @@ class _TextExtractor(HTMLParser):
             self.text.append(data)
 
 
-_SECTION_RE = re.compile(r"(?im)^\s*item\s+(1a|1b|7|7a|8)\s*[.\-:\u2013]?\s*(.*)$")
+_SECTION_RE = re.compile(r"(?im)^\s*item\s+(1a|1b|7a|7|2|3|4|8)\s*[.\-:\u2013]?\s*(.*)$")
 _TITLES = {"1a":"Risk Factors", "7":"Management Discussion and Analysis"}
 
-def extract_sections(html: str, filing_url: str, accession: str, filed: str) -> list[FilingSection]:
+def extract_sections(html: str, filing_url: str, accession: str, filed: str, form: str = "10-K") -> list[FilingSection]:
     parser = _TextExtractor()
     parser.feed(html[:MAX_HTML_BYTES])
     text = "\n".join(" ".join(line.split()) for line in "".join(parser.text).splitlines() if line.strip())
@@ -74,7 +74,10 @@ def extract_sections(html: str, filing_url: str, accession: str, filed: str) -> 
     # plausible content, and reject tiny TOC references.
     matches = list(_SECTION_RE.finditer(text))
     results = []
-    for item, title in _TITLES.items():
+    if form not in {"10-K", "10-Q"}:
+        raise ValueError("Unsupported filing form.")
+    titles = _TITLES if form == "10-K" else {"2": "Management Discussion and Analysis", "1a": "Risk Factors"}
+    for item, title in titles.items():
         candidates = []
         for index, match in enumerate(matches):
             if match.group(1).lower() != item:
@@ -84,10 +87,10 @@ def extract_sections(html: str, filing_url: str, accession: str, filed: str) -> 
             if 250 <= len(candidate) <= 1_500_000:
                 candidates.append(candidate)
         if candidates:
-            chosen = max(candidates, key=len)[:45_000]
+            chosen = max(candidates, key=len)[:240_000]
             results.append(FilingSection(item=f"Item {item.upper()}", title=title, text=chosen,
                                          filing_url=filing_url, accession=accession, filed=filed,
-                                         locator=f"10-K, Item {item.upper()} (section-level, not paragraph anchor)"))
+                                         locator=f"{form}, Item {item.upper()} (section-level; passage offset is in extracted text, not an SEC deep link)"))
     return results
 
 _STOPWORDS = {"what","the","about","have","from","with","this","that","their","which","please","analyze","company","financial","report","risk","risks","and","for","how","are","into"}
@@ -114,7 +117,9 @@ class FilingClient:
     def __init__(self, user_agent: str):
         self.user_agent = user_agent
 
-    async def research(self, cik: str, question: str, limit: int = 4) -> FilingResearch:
+    async def research(self, cik: str, question: str, limit: int = 4, form: str = "10-K") -> FilingResearch:
+        if form not in {"10-K", "10-Q"}:
+            raise SECError("Supported forms are 10-K and 10-Q.")
         if not self.user_agent or "@" not in self.user_agent or "example.com" in self.user_agent.lower():
             raise SECError("Set a real SEC_USER_AGENT with contact email for SEC filings.")
         if not re.fullmatch(r"\d{1,10}", cik):
@@ -128,7 +133,7 @@ class FilingClient:
                 payload = r.json()
                 recent = payload["filings"]["recent"]
                 forms = recent["form"]
-                ix = next(i for i, form in enumerate(forms) if form == "10-K")
+                ix = next(i for i, filing_form in enumerate(forms) if filing_form == form)
                 accession = str(recent["accessionNumber"][ix])
                 document = str(recent["primaryDocument"][ix])
                 filed = str(recent["filingDate"][ix])
@@ -142,11 +147,11 @@ class FilingClient:
                 resp.raise_for_status()
                 if len(resp.content) > MAX_HTML_BYTES:
                     raise SECError("SEC filing exceeds the configured document size limit.")
-                sections = extract_sections(resp.text, url, accession, filed)
+                sections = extract_sections(resp.text, url, accession, filed, form=form)
                 result = FilingResearch(cik=cik.zfill(10), accession=accession, filing_url=url, sections=sections,
                                         evidence=retrieve_evidence(sections, question, limit))
                 if not sections:
-                    result.warnings.append("Could not locate complete Item 1A/7 sections. Source formatting varies; no narrative claims were generated.")
+                    result.warnings.append("Could not locate supported filing sections. Source formatting varies; no narrative claims were generated.")
                 return result
             except (httpx.HTTPError, KeyError, TypeError, ValueError, StopIteration) as exc:
-                return FilingResearch(cik=cik.zfill(10), warnings=["SEC filing text is temporarily unavailable or no recent 10-K was found."])
+                return FilingResearch(cik=cik.zfill(10), warnings=["SEC filing text is temporarily unavailable or no recent filing of the requested form was found."])

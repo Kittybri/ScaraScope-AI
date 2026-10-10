@@ -1,0 +1,5 @@
+.document-answer { white-space: pre-wrap; line-height: 1.6; overflow-wrap: anywhere; }
+#document-output .lab-row { margin-block: 0.75rem; }
+#document-output .lab-row p { white-space: pre-wrap; overflow-wrap: anywhere; }
+#document-output small { display:block; color:var(--muted, #6a7b8c); margin-top:.5rem; }
+#document-output a {display:inline-block; margin-top:.5rem;}

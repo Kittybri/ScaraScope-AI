@@ -7,8 +7,10 @@
   <title>ScaraScope AI | Financial Intelligence</title>
   <link rel="stylesheet" href="/static/styles.css">
   <link rel="stylesheet" href="/static/advanced.css">
+  <link rel="stylesheet" href="/static/documents.css">
   <script src="/static/app.js" defer></script>
   <script src="/static/advanced.js" defer></script>
+  <script src="/static/documents.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -94,6 +96,18 @@
           <p class="muted">Saved locally. This prototype does not yet poll in the background or send alerts.</p>
           <div class="lab-actions"><button type="button" id="watch-add" class="secondary">Watch ticker above</button><button type="button" id="watch-refresh" class="secondary">Refresh list</button><button type="button" id="watch-check" class="secondary">Check new filings</button></div>
           <div id="watch-output" class="lab-output" aria-live="polite"></div>
+        </section>
+        <section class="panel lab-card">
+          <div class="panel-label">SEC DOCUMENT INTELLIGENCE</div><h3>Ask a filing</h3>
+          <p class="muted">Search public 10-K/10-Q passages. Answers cite extracted evidence labels, not verified paragraph deep links. Uses the ticker, provider and privacy policy above.</p>
+          <form id="document-form" class="compact-form">
+            <label for="document-form-type">Filing type</label>
+            <select id="document-form-type"><option value="10-K">10-K (annual)</option><option value="10-Q">10-Q (quarterly)</option></select>
+            <label for="document-question">Document question</label>
+            <textarea id="document-question" rows="3" maxlength="700" minlength="6" required>What cybersecurity risks are discussed?</textarea>
+            <button class="secondary lab-button" type="submit" id="document-submit">Find cited evidence →</button>
+          </form>
+          <div id="document-output" class="lab-output" aria-live="polite"></div>
         </section>
       </div>
     </section>

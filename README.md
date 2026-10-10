@@ -2,7 +2,7 @@
 
 **A source-grounded financial research assistant and hybrid LLM engineering portfolio project.** Built independently (not connected with my personal projects Scaramouche and Wanderer), with a headless Python/FastAPI backend, browser dashboard, optional Discord client, and pluggable Ollama/Groq inference.
 
-> **Status:** v0.2 modular prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not a full-text filing RAG system.
+> **Status:** v0.3 modular prototype, not a trading platform or investment adviser. Oracle hosting and Groq credentials are **not configured** in the repository. The no-key demo uses **fictional** financial information. Live financial results use the SEC's XBRL Company Facts data, not an exhaustively indexed filing corpus.
 
 
 ## New in v0.2: modular financial research toolkit
@@ -24,6 +24,7 @@ Read [Feature Inventory](docs/FEATURES.md), [Security Notes](docs/SECURITY.md), 
 | Capability | Status |
 | --- | --- |
 | Responsive browser dashboard | Implemented |
+| Best-effort cited SEC document Q&A (10-K and 10-Q) | Implemented with lexical passages, optional Groq/Ollama synthesis, evidence-label checks and an offline fictional DEMO; **not** paragraph-anchored/semantically verified |
 | Offline DEMO (clearly fictional; no API keys) | Implemented |
 | Lookup by US-listed ticker and ingest SEC annual XBRL facts | Implemented; requires valid SEC contact User-Agent and network |
 | Revenue, operating income, net income, assets, liabilities, equity | Extracted where tagged in US GAAP; missing values shown explicitly |
@@ -117,6 +118,38 @@ curl -X POST http://127.0.0.1:8000/api/research \
 ```
 
 To protect research and history requests with a token, set `SCARASCOPE_API_KEY` in `.env`, restart, and pass an `X-API-Key` header (or enter the key in the browser's API-key field). **Configure this before any publicly accessible deployment.** API tokens are never part of committed source code.
+
+## Ask a filing (v0.3 document intelligence)
+
+The dashboard includes an **Ask a filing** panel. It runs independently of the
+financial-statement analysis and can search extracted sections of the most
+recent SEC **10-K** or **10-Q** using lexical retrieval. Use `DEMO` to explore
+fictional filing passages with **no external calls or API keys**.
+
+```bash
+# Works offline with fictional evidence and deterministic citations
+curl -X POST http://127.0.0.1:8000/api/documents/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"ticker":"DEMO","question":"What cybersecurity risks are described?","form":"10-K","provider":"none"}'
+
+# After configuring SEC_USER_AGENT, query live SEC 10-K passages:
+# curl -X POST http://127.0.0.1:8000/api/documents/ask \
+#   -H 'Content-Type: application/json' \
+#   -d '{"ticker":"MSFT","question":"What cybersecurity risks are described?","form":"10-K"}'
+```
+
+The result has `answer`, `status`, `provider`, `evidence` (E1/E2 source labels,
+SEC accession, URL, section title and normalized text offset), and limitations.
+If no passage matches, it abstains instead of inventing a filing statement.
+If an LLM supplies unknown or missing reference labels, the answer is replaced
+with source excerpts. **Reference checks do not validate the factual accuracy of
+LLM-written prose.** SEC URLs open the filing, not guaranteed precise paragraph
+anchors. Section extraction can fail for unusual SEC HTML, and lexical matching
+can miss synonyms. Large or PDF-only filings may remain unsupported.
+
+`GET /api/evaluation/retrieval` runs five synthetic keyword-retrieval and
+abstention regression cases. It is **not** a live financial QA accuracy score.
+See `docs/EVALUATION.md` for the scope of the tests.
 
 ## Optional Discord interface
 

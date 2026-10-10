@@ -10,14 +10,16 @@ from .routes import router
 from .advanced import router as advanced_router
 from .exports import router as export_router
 from .watchlist import router as watchlist_router
+from .documents import router as document_router
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
-app = FastAPI(title="ScaraScope AI", version="0.2.0", description="Source-grounded financial research and hybrid LLM provider routing")
+app = FastAPI(title="ScaraScope AI", version="0.3.0", description="Source-grounded financial research and hybrid LLM provider routing")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.include_router(router)
 app.include_router(advanced_router)
 app.include_router(export_router)
 app.include_router(watchlist_router)
+app.include_router(document_router)
 
 
 @app.middleware("http")

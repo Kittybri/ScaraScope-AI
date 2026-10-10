@@ -37,6 +37,19 @@ class SECClient:
         except (httpx.RequestError, ValueError) as exc:
             raise SECError("Cannot retrieve SEC data right now. Check connectivity and retry.") from exc
 
+    async def resolve_ticker(self, ticker: str) -> tuple[str, str]:
+        """Resolve ticker without the unnecessary XBRL Company Facts request."""
+        if not self.user_agent or "@" not in self.user_agent or "example.com" in self.user_agent.lower():
+            raise SECError("Set SEC_USER_AGENT with your real contact email before live SEC requests.")
+        async with httpx.AsyncClient(timeout=18, follow_redirects=False, headers={
+            "User-Agent": self.user_agent, "Accept": "application/json"}) as client:
+            companies = await self._get_json(client, SEC_TICKERS_URL)
+        match = next((c for c in companies.values() if isinstance(c, dict)
+                      and str(c.get("ticker", "")).upper() == ticker.upper()), None)
+        if not match:
+            raise SECError(f"Ticker {ticker} was not found in the SEC directory.")
+        return str(match["title"]), f"{int(match['cik_str']):010d}"
+
     async def get_company(self, ticker: str, years: int) -> tuple[str, str, list[AnnualFinancials], str]:
         if not self.user_agent or "@" not in self.user_agent or "example.com" in self.user_agent.lower():
             raise SECError("Set SEC_USER_AGENT in .env with your actual name and contact email before live SEC requests.")

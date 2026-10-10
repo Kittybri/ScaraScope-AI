@@ -25,3 +25,24 @@ The regression suite, `python -m pytest -q`, covers:
 4. Evaluate hallucinated numerical values, retrieval relevance, citation support, provider fallback, latency percentiles and total model spending **independently**.
 5. Compare Ollama and Groq on the same test split. Report missing-provider cases transparently rather than counting them as successes.
 6. Do not label arithmetic fixture accuracy as financial reasoning or LLM accuracy.
+
+## v0.3 document Q&A evaluation
+
+`GET /api/evaluation/retrieval` runs five **fictional, deterministic** lexical
+retrieval and abstention cases. They test whether a small fixture returns the
+expected item/section. They are *not* an LLM factual accuracy score or evidence
+of performance on FinanceBench, live EDGAR, or proprietary documents.
+
+`tests/test_document_qa.py` also checks passage offsets are exact substrings,
+invalid citation IDs trigger extractive fallback, absent evidence prevents
+unsupported model calls, both 10-K and 10-Q parsing paths, privacy routing,
+validation errors, and the static browser integration. Citation validation
+checks reference label structure only. Even a response containing valid `[E1]`
+can misstate what the evidence says; all investment-critical narrative claims
+still require human review or stronger independently evaluated claim-level checks.
+
+**Next evidence-based steps:** Construct a held-out human-annotated corpus of
+real filings and report recall@k, unsupported-question abstention, correct
+reporting-period retrieval, citation attribution precision, provider latency,
+and model-cost estimates with explicit denominators. Do not advertise fixture
+scores as live-document or LLM reasoning scores.
