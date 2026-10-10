@@ -7,7 +7,7 @@ The v0.5 release provides a repeatable comparison of **lexical term matching vs.
 Two frozen, question-level datasets exist:
 
 - `qa_dev_v1.jsonl`: 17 manually phrased questions, including three intentionally unanswerable examples.
-- `qa_heldout_v1.jsonl`: 14 different questions, including two intentionally unanswerable examples (12 answerable). Questions have separate IDs and were not used to tune the cutoff or ranking formula during the evaluated run. Underlying source issuers, financial periods, and values **are shared across splits**, so this is **not** issuer-held-out or external/generalization testing. The QA fixtures were authored for this project and haven't been independently human-audited.
+- `qa_heldout_v1.jsonl`: 14 different questions, including two intentionally unanswerable examples (12 answerable). Questions have separate IDs. An **earlier draft of held-out questions was inspected** during development of fiscal-year tokenization, so its scores were discarded. The published held-out question set was frozen *after* that change, and BM25 parameters and tokenization were **not modified after evaluating the replacement set**. This is still a small author-created test, not independently verified or external. Underlying source issuers, financial periods, and values **are shared across splits**, so this is **not** issuer-held-out or external/generalization testing. The QA fixtures were authored for this project and haven't been independently human-audited.
 
 Each answerable case has an **exact gold document ID**, value in USD millions, original SEC accession and filing URL. Dataset loader validates source URLs, accessions and figures against the frozen reference dataset; duplicate or malformed cases fail loudly.
 
@@ -15,10 +15,10 @@ Each answerable case has an **exact gold document ID**, value in USD millions, o
 
 | Held-out metric | Lexical baseline | BM25 |
 | --- | ---: | ---: |
-| Recall@1 | 33.33% | 58.33% |
-| Recall@3 | 50.00% | 100.00% |
+| Recall@1 | 16.67% | 66.67% |
+| Recall@3 | 66.67% | 100.00% |
 | Recall@5 | 66.67% | 100.00% |
-| MRR@5 | 0.4583 | 0.7917 |
+| MRR@5 | 0.3889 | 0.8333 |
 | Correctly empty results on unanswerable questions | 1/2 | 1/2 |
 
 **These are retrieval-ranking outcomes for 12 answerable and 2 unanswerable constructed examples, not LLM answer accuracy.** One unanswerable financial question was incorrectly matched by both methods. A small fixture corpus and year-token improvements in BM25 account for much of the measured lift; results should not be extrapolated to real SEC 10-K HTML, diverse companies, full filings, financial reasoning, or current markets. Runtime depends on hardware; the benchmark separately records local ranking time in milliseconds but does not represent network, API or generation latency.

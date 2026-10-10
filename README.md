@@ -48,7 +48,7 @@
 
 ## New in v0.5: measured financial evidence retrieval
 
-ScaraScope now includes an offline, SEC-source-linked **question-held-out retrieval benchmark**: 17 development questions and 14 held-out questions (12 answerable and 2 unanswerable). On the initial held-out run, BM25 achieved **Recall@3 of 100% versus 50% for the existing lexical baseline**; both methods abstained correctly on only **1 of 2** unanswerable questions. These numbers describe an intentionally small **reconstructed financial-reference corpus**, not raw SEC filing passages, model answer accuracy, or independent issuer-level generalization. The misses and denominators remain visible in the [Engineering Lab](http://127.0.0.1:8000/engineering).
+ScaraScope now includes an offline, SEC-source-linked **question-held-out retrieval benchmark**: 17 development questions and 14 frozen question-level held-out questions (12 answerable and 2 unanswerable). On the initial held-out run, BM25 achieved **Recall@3 of 100% versus 66.7% for the existing lexical baseline**; both methods abstained correctly on only **1 of 2** unanswerable questions. The final question set was frozen after the ranking approach was developed, not independently audited. These numbers describe an intentionally small **reconstructed financial-reference corpus**, not raw SEC filing passages, model answer accuracy, or independent issuer-level generalization. The misses and denominators remain visible in the [Engineering Lab](http://127.0.0.1:8000/engineering).
 
 - Optional **BM25** evidence ranking in *Ask a filing*; lexical remains the default.
 - Sentence-level **numerical claim checks** against the *specific cited passage*, with conservative extractive fallback.
