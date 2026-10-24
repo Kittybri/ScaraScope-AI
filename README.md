@@ -316,6 +316,15 @@ Configure `DISCORD_BOT_TOKEN` and run FastAPI separately. Discord remains a thin
 
 </details>
 
+## Deploy on Oracle Cloud
+
+Use the [Oracle Compute deployment guide](deploy/oracle/README.md) for an
+Ubuntu VM hosting the web app and API, persistent SQLite storage, required
+API authentication, and private access through an SSH tunnel. A Discord
+worker can be enabled later with a VM-only bot token. The included manual
+GitHub Actions workflow can update an existing, explicitly configured VM.
+These files do not create cloud resources or configure provider credentials.
+
 ## Documentation and development
 
 | Guide | Purpose |
