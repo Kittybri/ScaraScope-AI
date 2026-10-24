@@ -1,0 +1,58 @@
+name: scarascope-oracle
+
+x-runtime: &runtime
+  build:
+    context: ../..
+    dockerfile: deploy/oracle/Dockerfile
+  image: scarascope-oracle:local
+  restart: unless-stopped
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  api:
+    <<: *runtime
+    environment:
+      SCARASCOPE_API_KEY: ${SCARASCOPE_API_KEY:?Run sudo bash deploy/oracle/deploy.sh first}
+      SCARASCOPE_REQUIRE_AUTH: "true"
+      HISTORY_DB_PATH: /app/data/history.sqlite3
+      SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      OLLAMA_ENABLED: "false"
+      SCARASCOPE_REQUESTS_PER_MINUTE: ${SCARASCOPE_REQUESTS_PER_MINUTE:-60}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - data:/app/data
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=5)); assert d['status']=='ok' and d['auth_enabled'] and d['auth_required']"]
+      interval: 15s
+      timeout: 8s
+      start_period: 20s
+      retries: 5
+
+  discord:
+    <<: *runtime
+    profiles: [discord]
+    command: [python, -m, scarascope.discord_bot]
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      SCARASCOPE_API_URL: http://api:8000
+      SCARASCOPE_API_KEY: ${SCARASCOPE_API_KEY:?Run sudo bash deploy/oracle/deploy.sh first}
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  data:

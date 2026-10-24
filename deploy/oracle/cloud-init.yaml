@@ -1,0 +1,44 @@
+#cloud-config
+# Ubuntu 24.04 LTS (amd64 or arm64). Review before pasting into OCI user data.
+# This installs Docker and starts a private, authenticated web app/API.
+# No Oracle API key, GitHub token, SEC email, or model key belongs in user data.
+package_update: true
+packages:
+  - ca-certificates
+  - curl
+  - git
+  - python3
+write_files:
+  - path: /usr/local/sbin/bootstrap-scarascope
+    permissions: '0700'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      . /etc/os-release
+      if [[ ${ID} != ubuntu || ${VERSION_ID} != 24.04 ]]; then
+        echo 'This bootstrap supports Ubuntu 24.04 LTS only.' >&2
+        exit 1
+      fi
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+      chmod a+r /etc/apt/keyrings/docker.asc
+      cat > /etc/apt/sources.list.d/docker.sources <<EOF
+      Types: deb
+      URIs: https://download.docker.com/linux/ubuntu
+      Suites: ${VERSION_CODENAME}
+      Components: stable
+      Architectures: $(dpkg --print-architecture)
+      Signed-By: /etc/apt/keyrings/docker.asc
+      EOF
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      systemctl enable --now docker
+      # Change main to a reviewed branch or commit before launching if not merged.
+      SCARASCOPE_REF=main
+      git clone https://github.com/Kittybri/ScaraScope-AI.git /opt/scarascope-ai
+      cd /opt/scarascope-ai
+      git fetch --depth 1 origin "${SCARASCOPE_REF}"
+      git checkout --detach FETCH_HEAD
+      bash deploy/oracle/deploy.sh
+runcmd:
+  - [bash, /usr/local/sbin/bootstrap-scarascope]
