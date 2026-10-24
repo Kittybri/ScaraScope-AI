@@ -37,7 +37,8 @@ write_files:
       SCARASCOPE_REF=main
       git clone https://github.com/Kittybri/ScaraScope-AI.git /opt/scarascope-ai
       cd /opt/scarascope-ai
-      git checkout --detach "${SCARASCOPE_REF}"
+      git fetch --depth 1 origin "${SCARASCOPE_REF}"
+      git checkout --detach FETCH_HEAD
       bash deploy/oracle/deploy.sh
 runcmd:
   - [bash, /usr/local/sbin/bootstrap-scarascope]
